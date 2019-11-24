@@ -1,5 +1,5 @@
 /**
- *    Copyright 2009-2015 the original author or authors.
+ *    Copyright 2009-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.apache.ibatis.logging;
 /**
  * @author Clinton Begin
  */
+// MyBatis 日志接口，统一提供了 trace、debug、warn、error 四个级别
 public interface Log {
 
   boolean isDebugEnabled();
