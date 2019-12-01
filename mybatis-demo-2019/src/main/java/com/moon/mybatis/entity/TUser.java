@@ -7,8 +7,8 @@ import org.apache.ibatis.annotations.Param;
 
 import com.mysql.jdbc.Blob;
 
-public class TUser implements Serializable{
-	
+public class TUser implements Serializable {
+
     private Integer id;
 
     private String userName;
@@ -24,125 +24,119 @@ public class TUser implements Serializable{
     private String note;
 
     private TPosition position;
-    
-    private List<TJobHistory> jobs ;
-    
+
+    private List<TJobHistory> jobs;
+
     private List<HealthReport> healthReports;
 
-    
+
     private List<TRole> roles;
-/*    
-	public TUser(Integer id, String userName) {
+
+	/* public TUser(Integer id, String userName) {
 		super();
 		this.id = id;
 		this.userName = userName;
-	}
-	*/
-    
+	}*/
 
-    
-  
-	@Override
-	public String toString() {
-		String positionId=  (position == null ? "" : String.valueOf(position.getId()));
-		return "TUser [id=" + id + ", userName=" + userName + ", realName="
-				+ realName + ", sex=" + sex + ", mobile=" + mobile + ", email="
-				+ email + ", note=" + note + ", positionId=" + positionId + "]";
-	}
-	
-	public Integer getId() {
-		return id;
-	}
+    @Override
+    public String toString() {
+        String positionId = (position == null ? "" : String.valueOf(position.getId()));
+        return "TUser [id=" + id + ", userName=" + userName + ", realName="
+                + realName + ", sex=" + sex + ", mobile=" + mobile + ", email="
+                + email + ", note=" + note + ", positionId=" + positionId + "]";
+    }
 
-	public void setId(Integer id) {
-		this.id = id;
-	}
+    public Integer getId() {
+        return id;
+    }
 
-	public String getUserName() {
-		return userName;
-	}
+    public void setId(Integer id) {
+        this.id = id;
+    }
 
-	public void setUserName(String userName) {
-		this.userName = userName;
-	}
+    public String getUserName() {
+        return userName;
+    }
 
-	public String getRealName() {
-		return realName;
-	}
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
 
-	public void setRealName(String realName) {
-		this.realName = realName;
-	}
+    public String getRealName() {
+        return realName;
+    }
 
-	public Byte getSex() {
-		return sex;
-	}
+    public void setRealName(String realName) {
+        this.realName = realName;
+    }
 
-	public void setSex(Byte sex) {
-		this.sex = sex;
-	}
+    public Byte getSex() {
+        return sex;
+    }
 
-	public String getMobile() {
-		return mobile;
-	}
+    public void setSex(Byte sex) {
+        this.sex = sex;
+    }
 
-	public void setMobile(String mobile) {
-		this.mobile = mobile;
-	}
+    public String getMobile() {
+        return mobile;
+    }
 
-	public String getEmail() {
-		return email;
-	}
+    public void setMobile(String mobile) {
+        this.mobile = mobile;
+    }
 
-	public void setEmail(String email) {
-		this.email = email;
-	}
+    public String getEmail() {
+        return email;
+    }
 
-	public String getNote() {
-		return note;
-	}
+    public void setEmail(String email) {
+        this.email = email;
+    }
 
-	public void setNote(String note) {
-		this.note = note;
-	}
+    public String getNote() {
+        return note;
+    }
 
-	public TPosition getPosition() {
-		return position;
-	}
+    public void setNote(String note) {
+        this.note = note;
+    }
 
-	public void setPosition(TPosition position) {
-		this.position = position;
-	}
+    public TPosition getPosition() {
+        return position;
+    }
 
-	public List<TJobHistory> getJobs() {
-		return jobs;
-	}
+    public void setPosition(TPosition position) {
+        this.position = position;
+    }
 
-	public void setJobs(List<TJobHistory> jobs) {
-		this.jobs = jobs;
-	}
+    public List<TJobHistory> getJobs() {
+        return jobs;
+    }
 
-	public List<HealthReport> getHealthReports() {
-		return healthReports;
-	}
+    public void setJobs(List<TJobHistory> jobs) {
+        this.jobs = jobs;
+    }
 
-	public void setHealthReports(List<HealthReport> healthReports) {
-		this.healthReports = healthReports;
-	}
+    public List<HealthReport> getHealthReports() {
+        return healthReports;
+    }
 
-	public List<TRole> getRoles() {
-		return roles;
-	}
+    public void setHealthReports(List<HealthReport> healthReports) {
+        this.healthReports = healthReports;
+    }
 
-	public void setRoles(List<TRole> roles) {
-		this.roles = roles;
-	}
+    public List<TRole> getRoles() {
+        return roles;
+    }
 
-	public static void main(String[] args) {
-		System.out.println(1<<2);
-	}
+    public void setRoles(List<TRole> roles) {
+        this.roles = roles;
+    }
 
-	
-	
-    
+    public static void main(String[] args) {
+        System.out.println(1 << 2);
+    }
+
+
 }

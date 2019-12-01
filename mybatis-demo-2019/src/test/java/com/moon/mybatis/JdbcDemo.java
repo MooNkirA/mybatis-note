@@ -1,4 +1,4 @@
-package com.moon.mybatis.test;
+package com.moon.mybatis;
 
 import com.moon.mybatis.entity.TUser;
 import org.junit.Test;
