@@ -65,9 +65,11 @@ public final class ResultSetLogger extends BaseJdbcLogger implements InvocationH
       if (Object.class.equals(method.getDeclaringClass())) {
         return method.invoke(this, params);
       }
+      // 执行result.next方法，判断是否还有数据
       Object o = method.invoke(rs, params);
       if ("next".equals(method.getName())) {
         if ((Boolean) o) {
+          // 如果还有数据，计数器rows加1
           rows++;
           if (isTraceEnabled()) {
             ResultSetMetaData rsmd = rs.getMetaData();
@@ -79,6 +81,7 @@ public final class ResultSetLogger extends BaseJdbcLogger implements InvocationH
             printColumnValues(columnCount);
           }
         } else {
+          // 如果没有数据了，则打印rows，打印查询出来的数据条数
           debug("     Total: " + rows, false);
         }
       }

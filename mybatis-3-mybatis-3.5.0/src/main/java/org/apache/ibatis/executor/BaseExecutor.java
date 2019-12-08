@@ -45,20 +45,28 @@ import org.apache.ibatis.transaction.Transaction;
 import org.apache.ibatis.type.TypeHandlerRegistry;
 
 /**
+ * 抽象类，实现了executor接口的大部分方法，主要提供了缓存管理和事务管理的能力，其他子类需要实现的抽象方法为：doUpdate,doQuery等方法
  * @author Clinton Begin
  */
 public abstract class BaseExecutor implements Executor {
 
   private static final Log log = LogFactory.getLog(BaseExecutor.class);
 
+  // 事务对象
   protected Transaction transaction;
+  // 封装的Executor对象
   protected Executor wrapper;
 
+  // 延迟加载的队列
   protected ConcurrentLinkedQueue<DeferredLoad> deferredLoads;
+  // 一级缓存的实现，PerpetualCache
   protected PerpetualCache localCache;
+  // 一级缓存用于缓存输出的结果
   protected PerpetualCache localOutputParameterCache;
+  // 全局唯一configuration对象的引用
   protected Configuration configuration;
 
+  // 用于嵌套查询的的层数
   protected int queryStack;
   private boolean closed;
 
@@ -332,11 +340,15 @@ public abstract class BaseExecutor implements Executor {
     return list;
   }
 
+  // 获取数据库的连接对象（并不是直接从驱动中获取连接对象）
   protected Connection getConnection(Log statementLog) throws SQLException {
+    // 先获取原生的连接对象
     Connection connection = transaction.getConnection();
     if (statementLog.isDebugEnabled()) {
+      // 通过ConnectionLogger的newInstance方法创建connection的代理对象
       return ConnectionLogger.newInstance(connection, statementLog, queryStack);
     } else {
+      // 如果没有加入日志框架，则直接返回原生的连接对象
       return connection;
     }
   }

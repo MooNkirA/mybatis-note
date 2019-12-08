@@ -80,10 +80,21 @@ public class SimpleExecutor extends BaseExecutor {
     return Collections.emptyList();
   }
 
+    /**
+     * 创建Statement
+     *
+     * @param handler
+     * @param statementLog 日志功能接口
+     * @return
+     * @throws SQLException
+     */
   private Statement prepareStatement(StatementHandler handler, Log statementLog) throws SQLException {
     Statement stmt;
+    // 获取connection对象时，是创建具有日志能力的Connection动态代理对象
     Connection connection = getConnection(statementLog);
+    // 通过不同的StatementHandler，利用connection创建（prepare）Statement
     stmt = handler.prepare(connection, transaction.getTimeout());
+    // 使用parameterHandler处理占位符
     handler.parameterize(stmt);
     return stmt;
   }

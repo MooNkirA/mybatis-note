@@ -41,24 +41,33 @@ public final class PreparedStatementLogger extends BaseJdbcLogger implements Inv
     this.statement = stmt;
   }
 
+    /*
+     * 1. 增强PreparedStatement的setxxx方法将参数设置到columnMap、columnNames、columnValues，为打印参数做好准备
+     * 2. 增强PreparedStatement的execute相关方法，当方法执行时，通过动态代理打印参数,返回动态代理能力的resultSet
+     * 3. 如果是查询，增强PreparedStatement的getResultSet方法，返回动态代理能力的resultSet；如果是更新，直接打印影响的行数
+     */
   @Override
   public Object invoke(Object proxy, Method method, Object[] params) throws Throwable {
     try {
       if (Object.class.equals(method.getDeclaringClass())) {
         return method.invoke(this, params);
       }
+      // 判断增强PreparedStatement执行的execute相关方法
       if (EXECUTE_METHODS.contains(method.getName())) {
         if (isDebugEnabled()) {
+          // 当方法执行时，通过动态代理打印参数
           debug("Parameters: " + getParameterValueString(), true);
         }
         clearColumnInfo();
+        // 判断操作是否进行查询操作
         if ("executeQuery".equals(method.getName())) {
+          // 返回增加日志功能的ResultSet动态代理对象
           ResultSet rs = (ResultSet) method.invoke(statement, params);
           return rs == null ? null : ResultSetLogger.newInstance(rs, statementLog, queryStack);
         } else {
           return method.invoke(statement, params);
         }
-      } else if (SET_METHODS.contains(method.getName())) {
+      } else if (SET_METHODS.contains(method.getName())) { // 将参数设置到columnMap、columnNames、columnValues，为打印参数做好准备
         if ("setNull".equals(method.getName())) {
           setColumn(params[0], null);
         } else {
@@ -66,9 +75,11 @@ public final class PreparedStatementLogger extends BaseJdbcLogger implements Inv
         }
         return method.invoke(statement, params);
       } else if ("getResultSet".equals(method.getName())) {
+        // 返回增加日志功能的ResultSet动态代理对象
         ResultSet rs = (ResultSet) method.invoke(statement, params);
         return rs == null ? null : ResultSetLogger.newInstance(rs, statementLog, queryStack);
       } else if ("getUpdateCount".equals(method.getName())) {
+        // 如果是更新操作，直接打印影响的行数
         int updateCount = (Integer) method.invoke(statement, params);
         if (updateCount != -1) {
           debug("   Updates: " + updateCount, false);

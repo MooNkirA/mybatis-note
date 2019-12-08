@@ -35,14 +35,20 @@ import org.apache.ibatis.reflection.ArrayUtil;
  * @author Clinton Begin
  * @author Eduardo Macarron
  */
+// 所有日志增强的抽象基类
 public abstract class BaseJdbcLogger {
 
+  // 保存preparestatment中常用的set方法（占位符赋值），如：preparedStatement.setString(1, "moon");
   protected static final Set<String> SET_METHODS = new HashSet<>();
+  // 保存preparestatment中常用的执行sql语句的方法，如: ResultSet resultSet = preparedStatement.executeQuery();
   protected static final Set<String> EXECUTE_METHODS = new HashSet<>();
 
+  // 保存preparestatment中set方法的键值对
   private final Map<Object, Object> columnMap = new HashMap<>();
 
+  // 保存preparestatment中set方法的key值
   private final List<Object> columnNames = new ArrayList<>();
+  // 保存preparestatment中set方法的value值
   private final List<Object> columnValues = new ArrayList<>();
 
   protected Log statementLog;
@@ -102,17 +108,20 @@ public abstract class BaseJdbcLogger {
     return columnMap.get(key);
   }
 
+  // 打印参数的值以及参数的类型
   protected String getParameterValueString() {
+    // 创建一个集合存放拼接输出日志参数值
     List<Object> typeList = new ArrayList<>(columnValues.size());
     for (Object value : columnValues) {
       if (value == null) {
         typeList.add("null");
       } else {
+        // 拼接sql的参数值与参数类型，如：2(Integer)
         typeList.add(objectValueString(value) + "(" + value.getClass().getSimpleName() + ")");
       }
     }
     final String parameters = typeList.toString();
-    return parameters.substring(1, parameters.length() - 1);
+    return parameters.substring(1, parameters.length() - 1); // 去掉集合前后的"["与"]"
   }
 
   protected String objectValueString(Object value) {
