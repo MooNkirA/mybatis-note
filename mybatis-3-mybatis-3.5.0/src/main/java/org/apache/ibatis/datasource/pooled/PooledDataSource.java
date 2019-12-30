@@ -33,6 +33,8 @@ import org.apache.ibatis.logging.LogFactory;
 
 /**
  * This is a simple, synchronous, thread-safe database connection pool.
+ * 一个简单，同步的、线程安全的数据库连接池
+ * 带连接池的数据源，提高连接资源的复用性，避免频繁创建、关闭连接资源带来的开销
  *
  * @author Clinton Begin
  */
@@ -42,18 +44,28 @@ public class PooledDataSource implements DataSource {
 
   private final PoolState state = new PoolState(this);
 
+  // 真正用于创建连接的数据源
   private final UnpooledDataSource dataSource;
 
   // OPTIONAL CONFIGURATION FIELDS
+  // 最大活跃连接数
   protected int poolMaximumActiveConnections = 10;
+  // 最大闲置连接数
   protected int poolMaximumIdleConnections = 5;
+  // 最大checkout时长（最长使用时间）
   protected int poolMaximumCheckoutTime = 20000;
+  // 无法取得连接是最大的等待时间
   protected int poolTimeToWait = 20000;
+  // 最多允许几次无效连接
   protected int poolMaximumLocalBadConnectionTolerance = 3;
+  // 测试连接是否有效的sql语句
   protected String poolPingQuery = "NO PING QUERY SET";
+  // 是否允许测试连接
   protected boolean poolPingEnabled;
+  // 配置一段时间，当连接在这段时间内没有被使用，才允许测试连接是否有效
   protected int poolPingConnectionsNotUsedFor;
 
+  // 根据数据库url、用户名、密码生成一个hash值，唯一标识一个连接池，由这个连接池生成的连接都会带上这个值
   private int expectedConnectionTypeCode;
 
   public PooledDataSource() {
@@ -85,6 +97,7 @@ public class PooledDataSource implements DataSource {
   }
 
   @Override
+  // 从连接池中获取连接
   public Connection getConnection() throws SQLException {
     return popConnection(dataSource.getUsername(), dataSource.getPassword()).getProxyConnection();
   }
@@ -382,6 +395,13 @@ public class PooledDataSource implements DataSource {
     }
   }
 
+    /**
+     * 从连接池获取资源
+     * @param username
+     * @param password
+     * @return
+     * @throws SQLException
+     */
   private PooledConnection popConnection(String username, String password) throws SQLException {
     boolean countedWait = false;
     PooledConnection conn = null;

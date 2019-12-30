@@ -32,13 +32,15 @@ import javax.sql.DataSource;
 import org.apache.ibatis.io.Resources;
 
 /**
+ * 不带连接池的数据源，获取连接的方式和手动通过 JDBC 获取连接的方式是一样的
  * @author Clinton Begin
  * @author Eduardo Macarron
  */
 public class UnpooledDataSource implements DataSource {
 
-  private ClassLoader driverClassLoader;
-  private Properties driverProperties;
+  private ClassLoader driverClassLoader; // 驱动类的类加载器
+  private Properties driverProperties; // 数据库连接相关配置信息
+  // 缓存已注册的数据库驱动类
   private static Map<String, Driver> registeredDrivers = new ConcurrentHashMap<>();
 
   private String driver;
@@ -46,9 +48,10 @@ public class UnpooledDataSource implements DataSource {
   private String username;
   private String password;
 
-  private Boolean autoCommit;
-  private Integer defaultTransactionIsolationLevel;
+  private Boolean autoCommit; // 是否自动提交
+  private Integer defaultTransactionIsolationLevel; // 事务隔离级别
 
+  // TODO: 为什么Class.forName("com.mysql.jdbc.Driver")后，驱动就被注册到DriverManager?
   static {
     Enumeration<Driver> drivers = DriverManager.getDrivers();
     while (drivers.hasMoreElements()) {
@@ -90,6 +93,7 @@ public class UnpooledDataSource implements DataSource {
 
   @Override
   public Connection getConnection() throws SQLException {
+    // 获取数据源连接
     return doGetConnection(username, password);
   }
 
@@ -183,6 +187,7 @@ public class UnpooledDataSource implements DataSource {
   }
 
   private Connection doGetConnection(String username, String password) throws SQLException {
+    // 创建Properties对象，用于存放相关创建连接的参数配置
     Properties props = new Properties();
     if (driverProperties != null) {
       props.putAll(driverProperties);
@@ -196,9 +201,18 @@ public class UnpooledDataSource implements DataSource {
     return doGetConnection(props);
   }
 
+  /**
+   * 从doGetConnection方法可以分析出来，unpooledDatasource获取连接的方式和正常通过JDBC手动获取连接的方式是一样的
+   * @param properties
+   * @return
+   * @throws SQLException
+   */
   private Connection doGetConnection(Properties properties) throws SQLException {
+    // 初始化驱动
     initializeDriver();
+    // 通过驱动管理对象DriverManager获取数据源连接
     Connection connection = DriverManager.getConnection(url, properties);
+    // 设置事务是否自动提交，事务的隔离级别
     configureConnection(connection);
     return connection;
   }
