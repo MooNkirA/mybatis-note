@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+	PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+	<!-- 和Spring整合后environments标签配置将废除 -->
+	<!-- 运行环境配置 -->
+	<!-- default属性：指定默认使用哪一个运行环境 -->
+	<environments default="development">	
+		<!-- 配置运行环境，说明：
+			id属性：给运行环境取一个唯一的名称
+		 -->
+		<environment id="development">
+			<!-- 使用jdbc事务管理，事务控制由MyBatis管理 -->
+			<transactionManager type="JDBC" />
+			<!-- 数据库连接池，由MyBatis管理
+				type：指定mybatis内部提供的连接池
+			 -->
+			<dataSource type="POOLED">
+				<property name="driver" value="com.mysql.jdbc.Driver" />
+				<property name="url" value="jdbc:mysql://localhost:3306/day97_mybatis" />
+				<property name="username" value="root" />
+				<property name="password" value="123456" />
+			</dataSource>
+		</environment>
+	</environments>
+	<!-- 加载映射文件 -->
+	<mappers>
+		<!-- resource属性：加载的映射文件路径 -->
+		<mapper resource="sqlmap/User.xml" />
+	</mappers>
+</configuration>

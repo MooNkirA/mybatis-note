@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+	PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+	<!-- 加载属性文件和定义属性 ,说明：
+		1.resource：指定本地的配置文件位置
+		2.url：指定网络上的配置文件位置（http://127.0.0.1:8080/db.properties）
+		3.使用内部property标签，定义属性
+		4.加载顺序：先加载内部property标签定义的属性；再加上属性文件中定义的属性。如果有相同的属性，
+			属性文件中的属性，覆盖内部property标签定义的属性
+	-->
+	<properties resource="db.properties" />
+	
+	<!-- 自定义别名配置 -->
+	<typeAliases>
+		<!-- 包扫描方式配置别名，说明：
+			1.name：配置要扫描的包
+			2.默认都使用类的名称作为别名的名称
+			3.如果有多个包，在同一个父包，配置父包即可
+			4.如果不在同一个父包下，配置多个package
+			5.在企业项目中，推荐使用包扫描方式
+		 -->
+		 <package name="com.moon.entity"/>
+	</typeAliases>
+
+	<!-- 和Spring整合后environments标签配置将废除 -->
+	<!-- 运行环境配置 -->
+	<!-- default属性：指定默认使用哪一个运行环境 -->
+	<environments default="development">	
+		<!-- 配置运行环境，说明：
+			id属性：给运行环境取一个唯一的名称
+		 -->
+		<environment id="development">
+			<!-- 使用jdbc事务管理，事务控制由MyBatis管理 -->
+			<transactionManager type="JDBC" />
+			<!-- 数据库连接池，由MyBatis管理
+				type：指定mybatis内部提供的连接池
+			 -->
+			<dataSource type="POOLED">
+				<property name="driver" value="${db.driver}" />
+				<property name="url" value="${db.url}" />
+				<property name="username" value="${db.username}" />
+				<property name="password" value="${db.password}" />
+			</dataSource>
+		</environment>
+	</environments>
+	<!-- 加载映射文件 -->
+	<mappers>
+		<!-- 包扫描方式配置映射文件，说明：
+			1.前提是mapper代理开发方法
+			2.要求mapper映射文件，与mapper接口要放在同一目录
+			3.要求mapper映射文件的名称，与mapper接口的名称要一致
+		-->
+		<package name="com.moon.mapper"/>
+	</mappers>
+</configuration>

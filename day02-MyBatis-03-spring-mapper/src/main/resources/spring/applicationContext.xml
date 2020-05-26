@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+	http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+	http://www.springframework.org/schema/context 
+	http://www.springframework.org/schema/context/spring-context-4.0.xsd
+	http://www.springframework.org/schema/aop 
+	http://www.springframework.org/schema/aop/spring-aop-4.0.xsd 
+	http://www.springframework.org/schema/tx 
+	http://www.springframework.org/schema/tx/spring-tx-4.0.xsd
+	http://www.springframework.org/schema/util 
+	http://www.springframework.org/schema/util/spring-util-4.0.xsd">
+	
+	<!-- 开启spring的注解扫描
+	<context:component-scan base-package="com.moon"></context:component-scan>
+	 -->
+	
+	<!-- 配置加载数据库db.properties属性文件 -->
+	<context:property-placeholder location="classpath:db.properties"/>
+	
+	<!-- 配置数据库连接池(这次使用的是DBCP连接池)
+		destroy-method="close"的作用是当数据库连接不使用的时候,就把该连接重新放到数据池中,方便下次使用调用.
+	 -->
+	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+		<!-- 配置数据4要素 -->
+		<property name="driverClassName" value="${db.driverClassName}"/>
+		<property name="url" value="${db.url}" />
+		<property name="username" value="${db.username}" />
+		<property name="password" value="${db.password}" />
+		
+		<!-- 最大连接数量 -->
+		<property name="maxActive" value="${db.maxActive}"/>
+		<!-- 最小空闲连接数量 -->
+		<property name="minIdle" value="${db.minIdle}"/>
+		<!-- 最大空闲连接数量 -->
+		<property name="maxIdle" value="${db.maxIdle}"/>
+		<!-- 初始化连接数数量 -->
+		<property name="initialSize" value="${db.initialSize}"/>
+		<!-- 超时等待时间,以毫秒为单位 -->
+		<property name="maxWait" value="${db.maxWait}"/>
+	</bean>
+	
+	<!-- 配置sqlSessionFactory -->
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<!-- 注入连接池对象 -->
+		<property name="dataSource" ref="dataSource"/>
+		
+		<!-- 注入加载myBatis主配置文件 -->
+		<property name="configLocation" value="classpath:mybatis/sqlMapConfig.xml"/>
+	</bean>
+	
+	<!-- 配置用户mapper代理对象 
+		整合包提供的MapperFactoryBean类，用于配置mapper代理对象
+	-->
+	<!-- 
+	<bean id="userMapper" class="org.mybatis.spring.mapper.MapperFactoryBean">
+		注入sqlSessionFactory，引入已经创建的bean
+		<property name="sqlSessionFactory" ref="sqlSessionFactory" />
+		注入mapperInterface属性，值为被代理接口全限定名
+		<property name="mapperInterface" value="com.moon.mapper.UserMapper" />
+	</bean> -->
+
+	<!-- mapper代理对象配置方式二【掌握】 -->
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<!--配置扫描的包，说明：
+			1.如果有多个包，在同一个父包下，配置父包即可
+			2.如果不在同一父包下，以半角逗号进行分割：","
+			3.企业项目中，推荐使用方式
+		-->
+		<property name="basePackage" value="com.moon.mapper" />
+	</bean>
+
+</beans>

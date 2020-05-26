@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.moon.mapper.OrderMapper">
+	
+	<sql id="select_orders_list">
+		o.`id`,o.`user_id`,o.`number`,o.`createtime`,o.`note`
+	</sql>
+	<!-- 需求：查询全部订单数据
+		resultType已经使用了别名
+	 -->
+	<select id="queryAllOrders" resultType="order">
+		select <include refid="select_orders_list" /> from orders o
+	</select>
+	
+	<!-- 需求：查询全部订单数据
+		使用resultMap实现
+	 -->
+	<select id="queryAllOrdersByResultMap" resultMap="orderResultMap">
+		select <include refid="select_orders_list" /> from orders o
+	</select>
+	<!-- 配置Java对象属性与数据库表字段的对应关系
+		type属性：要映射的属性类型
+		id属性：唯一标识名称，通过id引用该resultMap
+	 -->
+	<resultMap type="order" id="orderResultMap">
+		<!-- <id>与<result>配置订单的主键对应关系，说明：
+			column：主键字段（表） 
+			property：主键属性（pojo）
+		-->
+		<id column="id" property="id"/>
+		<!-- 配置订单的普通字段对应关系 -->
+		<result column="user_id" property="userId"/>
+		<result column="number" property="number"/>
+		<result column="createtime" property="createtime"/>
+		<result column="note" property="note"/>
+	</resultMap>
+	
+	<!-- 需求：查询订单数据，并且关联查询出所属的用户数据 
+		使用resultMap属性返回映射,指定映射的字段
+	 -->
+	<select id="queryOrdersAndUsers" resultMap="orderAndUserResultMap">
+		select
+		  o.id,
+		  o.`user_id`,
+		  o.`number`,
+		  o.`createtime`,
+		  o.`note`,
+		  u.`username`,
+		  u.`address`
+		from
+		  `orders` o
+		left join `user` u
+		on o.`user_id` = u.`id`
+	</select>
+	<!-- 配置订单到用户的一对一关联关系，说明：
+		type：映射的类型（因为最后获取订单对象，所以写order）
+		id：唯一标识名称，通过id引用该resultMap
+	-->
+	<resultMap type="order" id="orderAndUserResultMap">
+	 	<!-- 配置order的主键关系 -->
+	 	<id property="id" column="id"/>
+	 	
+	 	<!-- 配置order普通字段对应关系 -->
+	 	<result property="userId" column="user_id"/>
+	 	<result property="number" column="number"/>
+	 	<result property="createtime" column="createtime"/>
+	 	<result property="note" column="note"/>
+	 	
+	 	<!-- 配置一对一关联关系
+	 		association标签：配置一对一关联关系
+			property：要映射的属性名称
+			javaType：要映射的属性类型（!必须要指定）
+	 	 -->
+	 	 <association property="user" javaType="user">
+	 	 	<!-- 配置用户主键对应关系
+	 	 		配置查询语句根据表的哪个字段进行关联查询
+	 	 	 -->
+	 	 	<id property="id" column="user_id"/>
+	 	 
+	 	 	<!-- 配置用户普通字段对应关系 -->
+	 	 	<result property="username" column="username"/>
+	 	 	<result property="address" column="address"/>
+		</association>
+	</resultMap>
+	
+</mapper>

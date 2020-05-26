@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 
+	namespace命名空间，作用就是对sql进行分类化管理，理解为sql隔离
+	注意：！！使用mapper代理方法开发，namespace必须和Mapper代理接口的全限定名称一致
+ -->
+<mapper namespace="com.moon.mapper.UserMapper">
+	
+	<!-- 在映射文件中配置多条sql语句 -->
+	<!-- 
+		通过select标签执行数据库查询
+		id属性：标识映射文件中的sql
+			将sql语句封装到mappedStatement对象中，将id称为mappedStatement的id
+		parameterType属性：指定输入参数的类型，例子是Long类型
+		resultType属性：指定sql输出结果的所映射的java对象类型
+						select指定resultType表示单条记录映射成的java对象
+		
+		在sql语句中，#{}表示一个占位符号
+		#{id}:其中的id表示接收输入的参数，参数名称就是“id”，
+				如果输入参数是基本数据类型，#{}中的参数名可以是任意，可以是value或者其它名称
+	 -->
+	<select id="findUserById" parameterType="int" resultType="user">
+		select * from `user` where id=#{id}
+	</select>
+	
+	<!-- 使用pojo包装类型，模糊查询，可能返回多个结果
+		parameterType属性：使用包装类型
+		resultType属性：表示单条记录映射成的java对象，就算返回是集合，但集合中存放还是自定义类型
+		${value}：接收输入参数的内容，如果传入类型是简单类型，${}中只能使用value
+	 -->
+	<select id="queryUserByCondition" parameterType="queryVo" resultType="user">
+		<!-- 因为输入参数是包装类，
+			#{}或${}接收pojo对象值，通过OGNL读取对象中的属性值，
+			如果实体类中属性是引用类型，通过属性.属性.属性...的方式获取对象属性值
+		-->
+		select * from `user` where username like '%${user.username}%'
+		<!-- 错误：
+			 select * from `user` where username like '%#{user.username}%'
+		-->
+	</select>
+	
+	<!-- 添加功能<insert>标签
+		parameterType属性：在添加功能中指定输入类型是实体类
+		#{}中指定实体的属性名，接收到实体类对象的属性值，MyBatis是通过OGNL获取对象的属性值
+			！占位符，当参数传递的是entity的时候，花括号中的内容是pojo的属性
+	 -->
+	<insert id="insertUser" parameterType="com.moon.entity.User">
+		<!-- 将插入数据的主键返回，返回到User对象中
+			select LAST_INSERT_ID()：得到刚刚insert操作添加的记录的主键，只适用与自增主键 
+			
+			keyColumn属性：主键字段名（表）
+			keyProperty属性：将查询到主键值设置到parameterType指定的对象的哪一个属性中
+			order属性：指定select LAST_INSERT_ID()执行顺序，相对于insert语句来说的执行顺序
+				BEFORE：在insert语句执行之前；
+				AFTER：在insert语句执行之后；
+			resultType属性：指定select LAST_INSERT_ID()的结果类型
+		 -->
+		 <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Integer">
+		 	select LAST_INSERT_ID()
+		 </selectKey>
+		insert into user(username,birthday,address) values(#{username},#{birthday},#{address})
+	</insert>
+	
+	<!-- 需求：统计用户数量 
+		resultType：返回基本数据类型:
+	 -->
+	<select id="countUsers" resultType="int">
+		select COUNT(*) from `user`
+	</select>
+	
+	<!-- ===========动态sql=========== -->
+	<!-- 需求：根据用户名称和性别查询用户  -->
+	<select id="queryUserByNameAndSex" parameterType="user" resultType="user">
+		select * from `user` 
+		<where>
+			<!-- if标签：判断用户名称不为空，并且不为空字符串，才作为查询的条件 -->
+			<if test="username != null and username != ''">
+				username like #{username}  
+			</if>
+			<!-- if标签：判断性别不为空，并且不为空字符串，才作为查询的条件 -->
+			<if test="sex != null and sex != ''">
+				 and sex=#{sex}
+			</if>
+		</where>
+	</select>
+	
+	<!-- 需求：动态修改用户数据 -->
+	<update id="dynamicUpdateUser" parameterType="user">
+		<!-- 原sql语句：update `user` set username='傷月',sex='2' where id='32'; -->
+		update `user` 
+		<set>
+			<if test="username != null and username != ''">
+				username=#{username},
+			</if>
+			<if test="sex != null and sex != ''">
+				sex=#{sex},
+			</if>
+		</set>
+		<where>
+			<if test="id != null and id != ''">
+				id=#{id}
+			</if>
+		</where>
+	</update>
+	
+	<!-- 需求：批量新增用户 -->
+	<insert id="batchInsertUsers" parameterType="list">
+		insert into `user` (username, birthday, sex, address)
+		values
+		<!-- 使用foreach标签
+			collection:参数集合，这里是list
+			item:当前循环的对象引用
+			separator:指定分割符(批量插入多个数据sql的分割符)
+		 -->
+		<foreach collection="list" item="u" separator=",">
+			(#{u.username},#{u.birthday},#{u.sex},#{u.address})
+		</foreach>
+	</insert>
+	
+	<!-- 需求：批量删除用户的sql语句 -->
+	<delete id="batchDeleteUsers" parameterType="list">
+		delete from `user` <!-- id in(35,36,37) -->
+		<where>
+			<!-- foreach标签：循环处理参数集合
+				collection：参数集合，这里是数组array
+	 	 		open：拼装的sql语句片段开始
+	 	 		close：拼装的sql语句片段的结束
+	 	 		item：当前遍历的元素
+	 	 		separator：指定元素之间的分割符
+			 -->
+			<foreach collection="array" item="id" separator="," open="id in(" close=")">
+				#{id}
+			</foreach>
+		</where> 
+	</delete>
+	
+	<!-- 需求：查询用户数据，并且关联查询出用户的所有订单数据 -->
+	<select id="queryUsersAndOrders" resultMap="userOrderResultMap">
+		select
+		  u.`id`,
+		  u.`username`,
+		  u.`birthday`,
+		  u.`sex`,
+		  u.`address`,
+		  o.`id` oid,
+		  o.`number`,
+		  o.`createtime`
+		from
+		  `user` u
+		  left join `orders` o
+		  on u.`id` = o.`user_id`
+	</select>
+	<!-- 配置用户到订单的一对多关联关系
+		type：要映射的类型(查询的结果是user集合)
+		 	id：唯一标识名称，通过id引用该resultMap
+	 -->
+	<resultMap type="user" id="userOrderResultMap">
+		<!-- 配置用户的主键字段的对应关系 -->
+		<id property="id" column="id"/>
+		
+		<!-- 配置用户的其他属性与字段的对应关系 -->
+		<result property="username" column="username"/>
+		<result property="birthday" column="birthday"/>
+		<result property="sex" column="sex"/>
+		<result property="address" column="address"/>
+		
+		<!-- 配置用户一对多的关系
+			collection：配置一对多关联关系
+	 			property：要映射的属性名称
+	 			javaType：要映射的属性类型（可以指定，可以不指定。建议指定）
+	 			ofType：集合中存放的类型（必须要指定）
+		 -->
+		<collection property="orderList" javaType="list" ofType="order">
+			<!-- 配置订单主键与字段的对应关系（对应的查询定义的别名） -->
+			<id property="id" column="oid"/>
+			<!-- 配置订单其他字段的对应关系 -->
+			<result property="number" column="number"/>
+			<result property="createtime" column="createtime"/>
+		</collection>
+	</resultMap>
+	
+</mapper>
