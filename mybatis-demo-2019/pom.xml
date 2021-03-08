@@ -53,9 +53,9 @@
         <dependency>
             <groupId>org.mybatis</groupId>
             <artifactId>mybatis</artifactId>
+             <version>3.5.0</version>
             <!-- 依赖自己下载的mybatis源码工程，方便调试 -->
-            <version>3.5.0-SNAPSHOT</version>
-            <!-- <version>3.5.0</version> -->
+            <!--<version>3.5.0-SNAPSHOT</version>-->
         </dependency>
 
         <dependency>
