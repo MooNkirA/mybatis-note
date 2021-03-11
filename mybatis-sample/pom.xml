@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.moon</groupId>
+    <artifactId>mybatis-sample</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+    <name>${project.artifactId}</name>
+    <description>
+        MyBatis 3.5.3 版本的源码学习案例工程(包括基础使用示例、涉及设计模式示例)
+        此示例项目示例只是配合源码断点调试学习，有些用法可能没有涉及。
+    </description>
+
+    <modules>
+        <module>mybatis-common</module>
+        <module>01-mybatis-quickstart</module>
+    </modules>
+
+    <!-- 版本号管理 -->
+    <properties>
+        <spring.version>5.2.8.RELEASE</spring.version>
+        <lombok.version>1.18.4</lombok.version>
+        <junit.version>4.13</junit.version>
+        <mybatis.version>3.5.2-study</mybatis.version>
+        <mysql-connector-java.version>5.1.45</mysql-connector-java.version>
+        <log4j.version>1.2.17</log4j.version>
+
+        <!-- 本项目版本号 -->
+        <module.version>1.0-SNAPSHOT</module.version>
+        <!-- JAVA 版本 -->
+        <java.version>1.8</java.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    </properties>
+
+    <!-- 版本控制 -->
+    <dependencyManagement>
+        <dependencies>
+            <!-- junit测试框架 -->
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>${junit.version}</version>
+            </dependency>
+
+            <!-- MyBatis 核心依赖 -->
+            <dependency>
+                <groupId>org.mybatis</groupId>
+                <artifactId>mybatis</artifactId>
+                <version>${mybatis.version}</version>
+            </dependency>
+            <!-- mysql数据库连接驱动 -->
+            <dependency>
+                <groupId>mysql</groupId>
+                <artifactId>mysql-connector-java</artifactId>
+                <version>${mysql-connector-java.version}</version>
+            </dependency>
+            <!-- 日志框架 -->
+            <dependency>
+                <groupId>log4j</groupId>
+                <artifactId>log4j</artifactId>
+                <version>${log4j.version}</version>
+            </dependency>
+            <!-- 工具框架 -->
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>${lombok.version}</version>
+            </dependency>
+
+            <!-- 项目其他模块 -->
+            <dependency>
+                <groupId>com.moon</groupId>
+                <artifactId>mybatis-common</artifactId>
+                <version>${module.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <!-- 公共依赖 -->
+    <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+        </dependency>
+    </dependencies>
+
+    <!-- 构建部分 -->
+    <build>
+        <finalName>${project.artifactId}</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.0</version>
+                <configuration>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                    <encoding>${project.build.sourceEncoding}</encoding>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+
+</project>

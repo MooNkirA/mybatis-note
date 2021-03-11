@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.moon.mybatis.dao.CommonMapper">
+
+    <!-- 结果集映射 -->
+    <resultMap id="AreaResultMap" type="com.moon.mybatis.pojo.ConsultConfigArea">
+        <result column="AREACODE" property="areaCode" jdbcType="VARCHAR"/>
+        <result column="AREANAME" property="areaName" jdbcType="VARCHAR"/>
+        <result column="STATE" property="state"/>
+    </resultMap>
+
+    <!-- SQL片段 -->
+    <sql id="queryAreaByAreaCodesql">
+        `areaCode`,`areaName`,`state`
+    </sql>
+
+    <select id="queryAreaByAreaCode" parameterType="java.util.Map" resultMap="AreaResultMap">
+        select
+        <include refid="queryAreaByAreaCodesql"/>
+        from consult_configarea
+    </select>
+
+</mapper>
