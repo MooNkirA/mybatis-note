@@ -2,8 +2,22 @@
 <!DOCTYPE configuration
         PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<!-- MyBatis 的配置文件示例 -->
+
+<!-- 配置 -->
 <configuration>
-    <properties resource="db.properties"/>
+    <!-- 属性配置：
+        可以在外部进行配置，并可以进行动态替换。
+        既可以在典型的 Java 属性文件中配置这些属性，也可以在 properties 元素的子元素中设置。
+        设置好的属性可以在整个配置文件中用来替换需要动态配置的属性值。比如 value="${driver}"
+     -->
+    <!-- 读取外部配置 -->
+    <properties resource="org/mybatis/example/config.properties">
+        <!-- 子元素中设置相应的属性值（可选） -->
+        <property name="username" value="dev_user"/>
+        <property name="password" value="F2Fa3!33TYyg"/>
+    </properties>
+
     <settings>
         <!--全局全局地开启或关闭配置文件中的所有映射器已经配置的任何缓存，默认为true-->
         <setting name="cacheEnabled" value="true"/>
@@ -74,18 +88,31 @@
             这个类必须包含一个签名方法static Configuration getConfiguration(). (从 3.2.3 版本开始)
         <setting name="configurationFactory" value="configClass"/>-->
     </settings>
+
+    <!-- 类型别名，可为 Java 类型设置一个缩写名字 -->
     <typeAliases>
+        <!-- 配置单个Java类型相应的缩写 -->
         <!--<typeAlias type="com.moon.mybatis.pojo.ConsultConfigArea" alias="Area"/>-->
+        <!-- 也可以指定一个包名，MyBatis 会在包名下面搜索需要的 Java Bean，
+            在没有注解的情况下，会使用 Bean 的首字母小写的非限定类名来作为它的别名。
+            若有@Alias("xxx")注解，则别名为其注解值。
+         -->
         <package name="com.moon.mybatis.pojo"/>
     </typeAliases>
+
+    <!-- 环境配置 -->
     <environments default="development">
         <environment id="development">
             <transactionManager type="JDBC"/>
             <dataSource type="POOLED">
-                <property name="driver" value="${mybatis.druid.driver-class-name}"/>
-                <property name="url" value="${mybatis.druid.url}"/>
-                <property name="username" value="${mybatis.druid.username}"/>
-                <property name="password" value="${mybatis.druid.password}"/>
+                <!-- 在上面的配置中引用外部或者，设置好的属性可以在整个配置文件中用来替换需要动态配置的属性值
+                    从 MyBatis 3.4.2 开始，可以为占位符指定一个默认值。如下例：
+                    如果属性'mybatis.driver'没有配置，则给默认值为'com.mysql.jdbc.Driver'
+                 -->
+                <property name="driver" value="${mybatis.driver:com.mysql.jdbc.Driver}"/>
+                <property name="url" value="${mybatis.url}"/>
+                <property name="username" value="${mybatis.username}"/>
+                <property name="password" value="${mybatis.password}"/>
             </dataSource>
         </environment>
     </environments>

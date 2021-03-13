@@ -12,7 +12,7 @@
     <artifactId>01-mybatis-quickstart</artifactId>
     <packaging>jar</packaging>
     <name>${project.artifactId}</name>
-    <description>MyBatis 快速入门示例</description>
+    <description>MyBatis 基于传统的xml配置的快速入门示例</description>
 
     <dependencies>
         <dependency>

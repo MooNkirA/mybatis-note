@@ -27,7 +27,9 @@ public class MyBatisBasicTest {
     @Before
     public void init() {
         try {
+            // 从 XML 文件中构建 SqlSessionFactory 的实例非常简单，建议使用类路径下的资源文件进行配置。
             String resource = "mybatis-config.xml";
+            // MyBatis 包含一个名叫 Resources 的工具类，它包含一些实用方法，可以使类路径或其它位置加载资源文件
             inputStream = Resources.getResourceAsStream(resource);
         } catch (IOException e) {
             e.printStackTrace();

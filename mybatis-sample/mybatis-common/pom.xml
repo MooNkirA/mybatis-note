@@ -11,13 +11,15 @@
     <artifactId>mybatis-common</artifactId>
     <packaging>jar</packaging>
     <name>${project.artifactId}</name>
-    <description>MyBatis 基础使用示例</description>
+    <description>MyBatis 基础使用示例公共部分</description>
 
     <dependencies>
+        <!-- mybatis 核心依赖 -->
         <dependency>
             <groupId>org.mybatis</groupId>
             <artifactId>mybatis</artifactId>
         </dependency>
+        <!-- mysql 驱动 -->
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
