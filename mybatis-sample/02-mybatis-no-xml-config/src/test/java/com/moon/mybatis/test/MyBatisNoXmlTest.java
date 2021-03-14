@@ -52,7 +52,7 @@ public class MyBatisNoXmlTest {
         SqlSession sqlSession = sqlSessionFactory.openSession();
         // 获取需要调用的mapper接口
         CommonMapper mapper = sqlSession.getMapper(CommonMapper.class);
-        System.out.println(mapper.queryAreaByAreaCode(new HashMap()));
+        System.out.println(mapper.queryAreaByAreaCode(new HashMap<>()));
     }
 
 }

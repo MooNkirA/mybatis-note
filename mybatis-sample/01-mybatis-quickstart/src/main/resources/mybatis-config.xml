@@ -10,7 +10,7 @@
         <environment id="development">
             <transactionManager type="JDBC"/>
             <dataSource type="POOLED">
-                <property name="driver" value="${mybatis.driver-class-name}"/>
+                <property name="driver" value="${mybatis.driverClassName}"/>
                 <property name="url" value="${mybatis.url}"/>
                 <property name="username" value="${mybatis.username}"/>
                 <property name="password" value="${mybatis.password}"/>

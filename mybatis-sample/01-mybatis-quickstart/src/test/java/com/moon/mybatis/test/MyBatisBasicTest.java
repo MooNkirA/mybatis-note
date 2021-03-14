@@ -48,7 +48,7 @@ public class MyBatisBasicTest {
         SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(inputStream);
         SqlSession sqlSession = sqlSessionFactory.openSession();
         CommonMapper mapper = sqlSession.getMapper(CommonMapper.class);
-        System.out.println(mapper.queryAreaByAreaCode(new HashMap()));
+        System.out.println(mapper.queryAreaByAreaCode(new HashMap<>()));
     }
 
 }
