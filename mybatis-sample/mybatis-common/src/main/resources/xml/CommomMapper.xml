@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.moon.mybatis.dao.CommonMapper">
+
+    <!-- 基础结果集映射，使用类的完全限定名的方式指定type -->
+    <resultMap id="AreaResultMap" type="com.moon.mybatis.pojo.ConsultConfigArea">
+        <result column="AREACODE" property="areaCode" jdbcType="VARCHAR"/>
+        <result column="AREANAME" property="areaName" jdbcType="VARCHAR"/>
+        <result column="STATE" property="state"/>
+    </resultMap>
+
+    <resultMap id="ContractResultMap" type="com.moon.mybatis.pojo.ConsultContractCardInfo">
+        <id column="CONTRACT_ID" property="contractId"/>
+        <result column="PSPTID" property="psptId"/>
+        <result column="CONTRACT_CODE" property="contractCode"/>
+        <result column="ACTIVETIME" property="activeTime"/>
+        <result column="STATE" property="state"/>
+    </resultMap>
+
+    <!-- 基础结果集映射，使用类型别名的方式指定type -->
+    <resultMap id="CardIdInfoResultMap" type="consultIdCardInfo">
+        <id column="innerId" property="innerId"/>
+        <result column="PSPTID" property="psptId" jdbcType="VARCHAR"/>
+        <result column="NAME" property="name"/>
+        <result column="Birthday" property="birthday"/>
+        <result column="Sex" property="sex"/>
+        <result column="Address" property="address"/>
+        <result column="activeTime" property="activeTime"/>
+        <result column="picture" property="picture"/>
+        <result column="nation" property="nation"/>
+    </resultMap>
+
+    <!-- 结果映射（resultMap）
+        association – 一个复杂类型的关联；许多结果将包装成指定的类型。
+        嵌套结果映射 – 关联可以是 resultMap 元素，或是对其它结果映射的引用
+     -->
+    <resultMap id="contractResultMapAssociation" type="consultContractCardInfoWithIdCardInfo">
+        <id column="CONTRACT_ID" property="contractId"/>
+        <result column="CONTRACT_CODE" property="contractCode"/>
+        <result column="ACTIVETIME" property="activeTime"/>
+        <result column="STATE" property="state"/>
+        <!-- 嵌套单个结果映射
+            javaType 指定映射的类型，如果Java bean的属性与查询出来的结果字段名称一致，即可直接指定javaType（以下示例的javaType可以省略）
+            resultMap 指定结果映射的引用，当前查询的结果字段与Java bean 属性不一致，使用此方法指定字段与属性的映射关系
+         -->
+        <association property="info" javaType="consultIdCardInfo" resultMap="CardIdInfoResultMap" />
+    </resultMap>
+
+    <!-- 结果映射（resultMap）
+        collection – 一个复杂类型的集合。
+        嵌套结果映射 – 集合可以是 resultMap 元素，或是对其它结果映射的引用
+     -->
+    <resultMap id="idcardinfoResultMapCollection" type="consultIdCardInfoWithContract">
+        <id column="innerId" property="innerId"/>
+        <result column="PSPTID" property="psptId" jdbcType="VARCHAR"/>
+        <result column="NAME" property="name"/>
+        <result column="Birthday" property="birthday"/>
+        <result column="Sex" property="sex"/>
+        <result column="Address" property="address"/>
+        <result column="activeTime" property="activeTime"/>
+        <result column="picture" property="picture"/>
+        <result column="nation" property="nation"/>
+        <!-- 嵌套多个结果映射
+            javaType 指定映射的类型，因为是多个结果，所以需要指定为List类型
+            resultMap 指定结果映射的引用，当前查询的结果字段与Java bean 属性不一致，使用此方法指定字段与属性的映射关系
+         -->
+        <collection property="contractCardInfoList" javaType="java.util.List" resultMap="ContractResultMap"/>
+    </resultMap>
+
+    <!-- SQL片段 -->
+    <sql id="queryAreaByAreaCodesql">
+        `areaCode`,`areaName`,`state`
+    </sql>
+
+    <!-- resultMap映射，返回多个数据 -->
+    <select id="queryAreaByAreaCode" parameterType="java.util.Map" resultMap="AreaResultMap">
+        select
+        <include refid="queryAreaByAreaCodesql"/>
+        from consult_configarea
+    </select>
+
+    <!-- 连表查询单条数据，使用 association 复杂类型的关联 -->
+    <select id="queryContractOnebyCardId" resultMap="contractResultMapAssociation">
+        select *
+        from consult_contract a
+        join consult_idcardinfo b on a.psptId = b.psptId limit 1
+    </select>
+
+    <!-- 连表查询多条数据，使用 collection 复杂类型的集合 -->
+    <select id="queryIdcardinfobyCardId" resultMap="idcardinfoResultMapCollection">
+        SELECT *
+        FROM consult_idcardinfo a
+        JOIN consult_contract b ON a.psptId = b.psptId
+        WHERE a.psptId = #{psptId}
+    </select>
+
+    <!-- 方法参数为Map形式传入 -->
+    <select id="queryUserByPsptIdMap" parameterType="java.util.Map" resultType="java.util.Map">
+        select *,date_format(birthday,'%Y-%m-%d') birthday1,date_format(activeTime,'%Y-%m-%d') activeTime1
+        from consult_idcardinfo
+        where psptId = #{psptId,jdbcType=VARCHAR}
+    </select>
+
+    <!-- 方法参数为@Param注解形式传入 -->
+    <select id="queryUserByPsptIdParam" resultType="java.util.Map">
+        select *,date_format(birthday,'%Y-%m-%d') birthday1,date_format(activeTime,'%Y-%m-%d') activeTime1
+        from consult_idcardinfo
+        where psptId = #{psptId,jdbcType=VARCHAR}
+    </select>
+
+    <!-- 方法参数为对象形式传入 -->
+    <select id="queryUserByPsptIdObj" parameterType="consultIdCardInfo" resultType="java.util.Map">
+        select *,date_format(birthday,'%Y-%m-%d') birthday1,date_format(activeTime,'%Y-%m-%d') activeTime1
+        from consult_idcardinfo
+        where psptId = #{psptId,jdbcType=VARCHAR}
+    </select>
+
+    <!-- 处理主键的生成的方式1：
+            useGeneratedKeys="true",使用数据库的主键生成策略，默认值是true
+            keyColumn：主键字段（表）
+            keyProperty：主键属性（pojo）
+	 -->
+    <insert id="saveContractUseGeneratedKeys" useGeneratedKeys="true" keyProperty="contractId">
+        insert into consult_contract(psptId,contract_code,state,activeTime)
+        values(#{contract.psptId},#{contract.contractCode},#{contract.state},#{contract.activeTime})
+    </insert>
+
+    <!-- 处理主键的生成的方式2：使用<selectKey>内嵌标签
+            select LAST_INSERT_ID()：得到刚刚insert操作添加的记录的主键，只适用与自增主键
+
+            keyColumn属性：主键字段名（表）
+            keyProperty属性：将查询到主键值设置到parameterType指定的对象的哪一个属性中
+            order属性：指定select LAST_INSERT_ID()执行顺序，相对于insert语句来说的执行顺序
+                BEFORE：在insert语句执行之前；
+                AFTER：在insert语句执行之后；
+            resultType属性：指定select LAST_INSERT_ID()的结果类型
+
+                oracle数据库中使用BEFORE:
+                    <selectKey keyColumn="id" keyProperty="id" resultType="int" order="BEFORE">
+                        select seq.nextVal from dual;
+                     </selectKey>
+                    insert into `user`(id,username,birthday,sex,address)
+                    values(#{id},#{username},#{birthday},#{sex},#{address})
+	 -->
+    <insert id="saveContractUseSelectKey">
+        <selectKey keyProperty="contractId" order="AFTER" resultType="int">
+            select LAST_INSERT_ID()
+        </selectKey>
+        insert into consult_contract(psptId,contract_code,state,activeTime)
+        values(#{contract.psptId},#{contract.contractCode},#{contract.state},#{contract.activeTime})
+    </insert>
+
+</mapper>
