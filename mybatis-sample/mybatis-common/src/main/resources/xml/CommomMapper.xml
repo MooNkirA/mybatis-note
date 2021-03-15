@@ -150,4 +150,19 @@
         values(#{contract.psptId},#{contract.contractCode},#{contract.state},#{contract.activeTime})
     </insert>
 
+    <!-- 动态sql <foreach>标签拼接sql批量新增 -->
+    <insert id="saveContracts" parameterType="java.util.List">
+        insert into consult_contract(psptId,contract_code,state,activeTime)
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.psptId},#{item.contractCode},#{item.state},#{item.activeTime})
+        </foreach>
+    </insert>
+
+    <!-- 动态sql <foreach>标签拼接sql批量新增 -->
+    <insert id="saveContract" parameterType="consultContract">
+        insert into consult_contract(psptId,contract_code,state,activeTime)
+        values(#{psptId},#{contractCode},#{state},#{activeTime})
+    </insert>
+
 </mapper>

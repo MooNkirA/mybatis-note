@@ -44,4 +44,9 @@ public interface CommonMapper {
     /* 使用<selectKey>标签元素获取数据库生成的主键 */
     int saveContractUseSelectKey(@Param("contract") ConsultContract contract);
 
+    /* 普通的新增语句，用于测试批处理方式新增 */
+    int saveContract(ConsultContract contract);
+
+    /* 动态sql <foreach>标签拼接sql批量新增 */
+    int saveContracts(List<ConsultContract> contractList);
 }

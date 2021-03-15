@@ -43,12 +43,21 @@ import org.xml.sax.SAXParseException;
  * @author Clinton Begin
  * @author Kazuki Shimizu
  */
+
+/**
+ * XPathParser：封装了“javax.xml.xpath.XPath”类的对象，具有了 XML解析的能力，可以把 XPathParser类看作 javax.xml.xpath.X Path类的包装类
+ */
 public class XPathParser {
 
+  // 封装要待解析的整个XML文档
   private final Document document;
+  // 是否开启验证
   private boolean validation;
+  // 通过EntityResolver 可以声明寻找DTD文件的方法，例如通过本地寻找，而不是只能通过网络下载DTD文件
   private EntityResolver entityResolver;
+  // MyBatis配置文件中的properties节点的信息
   private Properties variables;
+  // javax.xml.xpath.XPath工具
   private XPath xpath;
 
   public XPathParser(String xml) {
@@ -118,6 +127,7 @@ public class XPathParser {
 
   public XPathParser(Reader reader, boolean validation, Properties variables, EntityResolver entityResolver) {
     commonConstructor(validation, variables, entityResolver);
+    // 将Reader对象转jdk的InputSource对象，再创建Document对象（用于封装待解析的xml配置文件）
     this.document = createDocument(new InputSource(reader));
   }
 
@@ -139,8 +149,16 @@ public class XPathParser {
     return evalString(document, expression);
   }
 
+  /**
+   * 解析XML文件中的字符串
+   * @param root 解析根
+   * @param expression 解析的语句
+   * @return 解析出的字符串
+   */
   public String evalString(Object root, String expression) {
+    // 解析出的字符串结果
     String result = (String) evaluate(expression, root, XPathConstants.STRING);
+    // 对字符串中的属性进行处理
     result = PropertyParser.parse(result, variables);
     return result;
   }
@@ -218,8 +236,16 @@ public class XPathParser {
     return new XNode(this, node, variables);
   }
 
+  /**
+   * 进行XML节点解析
+   * @param expression 解析的语句
+   * @param root 解析根
+   * @param returnType 返回值类型
+   * @return 解析结果
+   */
   private Object evaluate(String expression, Object root, QName returnType) {
     try {
+      // 对指定节点root运行解析语法expression，获得returnType类型的解析结果
       return xpath.evaluate(expression, root, returnType);
     } catch (Exception e) {
       throw new BuilderException("Error evaluating XPath.  Cause: " + e, e);
@@ -229,7 +255,9 @@ public class XPathParser {
   private Document createDocument(InputSource inputSource) {
     // important: this must only be called AFTER common constructor
     try {
+      // jdk的api，创建DocumentBuilderFactory实例
       DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+      // 设置相关的属性
       factory.setValidating(validation);
 
       factory.setNamespaceAware(false);
@@ -255,6 +283,7 @@ public class XPathParser {
         public void warning(SAXParseException exception) throws SAXException {
         }
       });
+      // DocumentBuilder对象解析成Document对象，并返回
       return builder.parse(inputSource);
     } catch (Exception e) {
       throw new BuilderException("Error creating document instance.  Cause: " + e, e);

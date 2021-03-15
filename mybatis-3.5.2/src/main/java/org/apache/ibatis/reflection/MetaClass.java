@@ -29,6 +29,10 @@ import org.apache.ibatis.reflection.property.PropertyTokenizer;
 /**
  * @author Clinton Begin
  */
+
+/**
+ * MetaClass就是一个涵盖了类型(Class)中更多细节信息和功能的类，称为“元类"
+ */
 public class MetaClass {
 
   private final ReflectorFactory reflectorFactory;

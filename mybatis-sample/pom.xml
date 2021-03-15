@@ -19,6 +19,7 @@
         <module>01-mybatis-quickstart</module>
         <module>02-mybatis-no-xml-config</module>
         <module>03-mybatis-basic</module>
+        <module>mybatis-generator</module>
     </modules>
 
     <!-- 版本号管理 -->
@@ -26,6 +27,7 @@
         <lombok.version>1.18.4</lombok.version>
         <junit.version>4.13</junit.version>
         <mybatis.version>3.5.2-study</mybatis.version>
+        <mybatis.generator.version>1.4.0</mybatis.generator.version>
         <mysql-connector-java.version>5.1.45</mysql-connector-java.version>
         <!-- 日志包版本 -->
         <log4j.version>1.2.17</log4j.version>
@@ -60,18 +62,28 @@
                 <artifactId>mysql-connector-java</artifactId>
                 <version>${mysql-connector-java.version}</version>
             </dependency>
+
+            <!-- MyBatis 代码生成器 -->
+            <dependency>
+                <groupId>org.mybatis.generator</groupId>
+                <artifactId>mybatis-generator-core</artifactId>
+                <version>${mybatis.generator.version}</version>
+            </dependency>
+
             <!-- 日志框架 -->
             <dependency>
                 <groupId>log4j</groupId>
                 <artifactId>log4j</artifactId>
                 <version>${log4j.version}</version>
             </dependency>
+
             <!-- 工具框架 -->
             <dependency>
                 <groupId>org.projectlombok</groupId>
                 <artifactId>lombok</artifactId>
                 <version>${lombok.version}</version>
             </dependency>
+            <!-- 缓存工具框架 -->
             <dependency>
                 <groupId>com.github.ben-manes.caffeine</groupId>
                 <artifactId>caffeine</artifactId>
