@@ -19,6 +19,15 @@
             <groupId>com.moon</groupId>
             <artifactId>mybatis-common</artifactId>
         </dependency>
+        <!-- 第三方缓存工具框架，用于实现自定义mybatis缓存 -->
+        <dependency>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>fastjson</artifactId>
+        </dependency>
     </dependencies>
 
 </project>

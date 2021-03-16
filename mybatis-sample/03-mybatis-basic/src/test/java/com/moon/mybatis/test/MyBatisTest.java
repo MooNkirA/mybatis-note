@@ -1,5 +1,6 @@
 package com.moon.mybatis.test;
 
+import com.moon.mybatis.dao.CacheMapper;
 import com.moon.mybatis.dao.CommonMapper;
 import com.moon.mybatis.dao.UserMapper;
 import com.moon.mybatis.pojo.ConsultContract;
@@ -28,7 +29,6 @@ import java.util.Map;
  */
 public class MyBatisTest {
 
-    // 从 XML 文件中构建 SqlSessionFactory 的实例非常简单，建议使用类路径下的资源文件进行配置。
     private final String RESOURCE = "mybatis-config.xml";
     private InputStream inputStream;
     private SqlSessionFactory sqlSessionFactory;
@@ -36,10 +36,8 @@ public class MyBatisTest {
     @Before
     public void init() {
         try {
-            // MyBatis 包含一个名叫 Resources 的工具类，它包含一些实用方法，可以使类路径或其它位置加载资源文件
-            this.inputStream = Resources.getResourceAsStream(RESOURCE);
             // 获取SqlSessionFactory
-            this.sqlSessionFactory = new SqlSessionFactoryBuilder().build(inputStream);
+            this.sqlSessionFactory = getSqlSessionFactory();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -170,9 +168,107 @@ public class MyBatisTest {
         System.out.println(System.currentTimeMillis() - t1); // 耗时：1850
     }
 
+    /* 测试一级缓存：同一个SqlSession同一个命名空间中的同一个查询语句多次执行 */
+    @Test
+    public void testLevel1Cache() {
+        Map<String, Object> map = new HashMap<>();
+        CommonMapper mapper = getSqlSession().getMapper(CommonMapper.class);
+        System.out.println("=========第一次查询==========");
+        System.out.println(mapper.queryAreaByAreaCode(map));
+        System.out.println("=========第二次查询==========");
+        System.out.println(mapper.queryAreaByAreaCode(map));
+    }
+
+    /* 测试一级缓存：不同的SqlSession同一个命名空间中的同一个查询语句多次执行 */
+    @Test
+    public void testLevel1CacheDiffSqlSession() {
+        Map<String, Object> map = new HashMap<>();
+        System.out.println("=========第一次查询==========");
+        System.out.println(getMapper(CommonMapper.class).queryAreaByAreaCode(map));
+        System.out.println("=========第二次查询==========");
+        System.out.println(getMapper(CommonMapper.class).queryAreaByAreaCode(map));
+    }
+
+    /* 测试二级缓存：同一个sqlSessionFactory，不同SqlSession同一个命名空间中的同一个查询语句多次执行 */
+    @Test
+    public void testLevel2CacheSameSqlSessionFactory() {
+        Map<String, Object> map = new HashMap<>();
+        // 开启一个SqlSession
+        SqlSession sqlSession = sqlSessionFactory.openSession();
+        CommonMapper mapper = sqlSession.getMapper(CommonMapper.class);
+        System.out.println("=========第一次查询==========");
+        System.out.println(mapper.queryAreaByAreaCode(map));
+        System.out.println("=========第二次查询==========");
+        System.out.println(mapper.queryAreaByAreaCode(map));
+        // 注意：需要提交事务与关闭sqlSession，才会序列化结果到二级缓存
+        sqlSession.commit();
+        sqlSession.close();
+
+        // 在同一个 sqlSessionFactory 中开启新的 SqlSession
+        SqlSession sqlSession1 = sqlSessionFactory.openSession();
+        System.out.println("=========新的sqlSession查询第一次查询==========");
+        System.out.println(sqlSession1.getMapper(CommonMapper.class).queryAreaByAreaCode(map));
+        sqlSession1.commit();
+        sqlSession1.close();
+    }
+
+    /* 测试二级缓存：不同的sqlSessionFactory，不同SqlSession同一个命名空间中的同一个查询语句多次执行 */
+    @Test
+    public void testLevel2CacheDiffSqlSessionFactory() throws IOException {
+        Map<String, Object> map = new HashMap<>();
+        SqlSession sqlSession = getSqlSession();
+        CommonMapper mapper = sqlSession.getMapper(CommonMapper.class);
+        System.out.println("=========第一次查询==========");
+        System.out.println(mapper.queryAreaByAreaCode(map));
+        System.out.println("=========第二次查询==========");
+        System.out.println(mapper.queryAreaByAreaCode(map));
+        // 注意：需要提交事务与关闭sqlSession，才会序列化结果到二级缓存
+        sqlSession.commit();
+        sqlSession.close();
+
+        // 获取新的sqlSessionFactory后，再开启一个SqlSession
+        SqlSession sqlSession1 = getSqlSessionFactory().openSession();
+        System.out.println("=========新的sqlSessionFactory开启的sqlSession查询第一次查询==========");
+        System.out.println(sqlSession1.getMapper(CommonMapper.class).queryAreaByAreaCode(map));
+        sqlSession1.commit();
+        sqlSession1.close();
+    }
+
+    /*
+     *  测试自定义缓存：使用了自定义缓存，自定义结果缓存的规则与存放的位置，
+     *              不使用默认的二级缓存存放在sqlSessionFactory中，即不会跨SqlSessionFactory缓存失效的问题
+     */
+    @Test
+    public void testCustomCacheDiffSqlSessionFactory() throws IOException {
+        SqlSession sqlSession = getSqlSession();
+        CacheMapper mapper = sqlSession.getMapper(CacheMapper.class);
+        System.out.println("=========第一次查询==========");
+        System.out.println(mapper.selectAllUser());
+        System.out.println("=========第二次查询==========");
+        System.out.println(mapper.selectAllUser());
+        // 注意：一样需要提交事务与关闭sqlSession，才会序列化结果到自定义缓存
+        sqlSession.commit();
+        sqlSession.close();
+
+        // 获取新的sqlSessionFactory后，再开启一个SqlSession
+        SqlSession sqlSession1 = getSqlSessionFactory().openSession();
+        System.out.println("=========新的sqlSessionFactory开启的sqlSession查询第一次查询==========");
+        System.out.println(sqlSession1.getMapper(CacheMapper.class).selectAllUser());
+        sqlSession1.commit();
+        sqlSession1.close();
+    }
+
     // *********************************************************************
     //                  抽取的工具方法
     // *********************************************************************
+
+    // 获取 SqlSessionFactory
+    private SqlSessionFactory getSqlSessionFactory() throws IOException {
+        // 从 XML 文件中构建 SqlSessionFactory 的实例非常简单，建议使用类路径下的资源文件进行配置。
+        // MyBatis 包含一个名叫 Resources 的工具类，它包含一些实用方法，可以使类路径或其它位置加载资源文件
+        this.inputStream = Resources.getResourceAsStream(RESOURCE);
+        return new SqlSessionFactoryBuilder().build(inputStream);
+    }
 
     // 获取默认的sqlSession
     private SqlSession getSqlSession() {

@@ -2,6 +2,9 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.moon.mybatis.dao.CommonMapper">
 
+    <!-- 启用二级缓存 -->
+    <cache eviction="FIFO" flushInterval="60000" size="512" readOnly="true"/>
+
     <!-- 基础结果集映射，使用类的完全限定名的方式指定type -->
     <resultMap id="AreaResultMap" type="com.moon.mybatis.pojo.ConsultConfigArea">
         <result column="AREACODE" property="areaCode" jdbcType="VARCHAR"/>
@@ -72,7 +75,10 @@
         `areaCode`,`areaName`,`state`
     </sql>
 
-    <!-- resultMap映射，返回多个数据 -->
+    <!-- resultMap映射，返回多个数据
+        设置 flushCache="true"，关闭此查询语句的一级缓存
+        当此命名空间开启了二级缓存，设置 useCache="false"，关闭此查询语句的二级缓存
+     -->
     <select id="queryAreaByAreaCode" parameterType="java.util.Map" resultMap="AreaResultMap">
         select
         <include refid="queryAreaByAreaCodesql"/>
