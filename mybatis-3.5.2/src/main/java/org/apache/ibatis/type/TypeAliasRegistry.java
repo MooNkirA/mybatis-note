@@ -110,9 +110,11 @@ public class TypeAliasRegistry {
       // issue #748
       String key = string.toLowerCase(Locale.ENGLISH);
       Class<T> value;
+      // 判断是否存在该别名
       if (typeAliases.containsKey(key)) {
         value = (Class<T>) typeAliases.get(key);
       } else {
+        // 不存在别名，直接当传入值为类全限定名，反射获取Class实例
         value = (Class<T>) Resources.classForName(string);
       }
       return value;

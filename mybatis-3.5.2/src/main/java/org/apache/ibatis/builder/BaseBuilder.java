@@ -119,6 +119,7 @@ public abstract class BaseBuilder {
       return null;
     }
     try {
+      // 根据别名获取反射对象
       return resolveAlias(alias);
     } catch (Exception e) {
       throw new BuilderException("Error resolving class. Cause: " + e, e);

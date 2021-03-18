@@ -23,7 +23,7 @@
        当此命名空间开启了二级缓存但使用了自定义缓存实现，设置 useCache="false"，
        同样会关闭此查询语句的自定义缓存的功能
      -->
-    <select id="selectAllUser" resultMap="BaseResultMap" useCache="false">
+    <select id="selectAllUser" resultMap="BaseResultMap">
         select
         <include refid="Base_Column_List" />
         from user

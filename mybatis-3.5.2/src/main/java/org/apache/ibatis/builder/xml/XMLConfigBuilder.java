@@ -87,8 +87,7 @@ public class XMLConfigBuilder extends BaseBuilder {
   }
 
   private XMLConfigBuilder(XPathParser parser, String environment, Properties props) {
-    // 在这里创建了一个核心类Configuration的实例，
-    // 调用抽象父类BaseBuilder构造函数，设置成员变量configuration
+    // 在这里创建了一个核心类Configuration的实例，调用抽象父类BaseBuilder构造函数，设置成员变量configuration
     super(new Configuration());
     ErrorContext.instance().resource("SQL Mapper Configuration");
     this.configuration.setVariables(props);
@@ -125,25 +124,26 @@ public class XMLConfigBuilder extends BaseBuilder {
       propertiesElement(root.evalNode("properties"));
       // 解析<settings>标签
       Properties settings = settingsAsProperties(root.evalNode("settings"));
-      //加载自定义类扫描器
+      // 获取 <setting> 标签name属性为vfsImpl的值，加载自定义类扫描器(类似spring的类扫描器)
       loadCustomVfs(settings);
+      // 获取 <setting> 标签name属性为logImpl的值
       loadCustomLogImpl(settings);
-      //别名扫描注册
+      // 别名标签 <typeAliases> 扫描注册【重点】
       typeAliasesElement(root.evalNode("typeAliases"));
       pluginElement(root.evalNode("plugins"));
-      //解析Pojo对象工厂类
+      // 解析Pojo对象工厂类
       objectFactoryElement(root.evalNode("objectFactory"));
       objectWrapperFactoryElement(root.evalNode("objectWrapperFactory"));
       reflectorFactoryElement(root.evalNode("reflectorFactory"));
-      //解析settings标签
+      // 解析settings标签
       settingsElement(settings);
       // read it after objectFactory and objectWrapperFactory issue #631
-      //解析环境标签
+      // 解析环境标签
       environmentsElement(root.evalNode("environments"));
       databaseIdProviderElement(root.evalNode("databaseIdProvider"));
-      //解析类型转换器
+      // 解析类型转换器
       typeHandlerElement(root.evalNode("typeHandlers"));
-      //解析mappers
+      // 解析mappers
       mapperElement(root.evalNode("mappers"));
     } catch (Exception e) {
       throw new BuilderException("Error parsing SQL Mapper Configuration. Cause: " + e, e);
@@ -168,11 +168,13 @@ public class XMLConfigBuilder extends BaseBuilder {
   private void loadCustomVfs(Properties props) throws ClassNotFoundException {
     String value = props.getProperty("vfsImpl");
     if (value != null) {
+      // 配置自定义 VFS 是多个实现类全限定名，以逗号分隔。
       String[] clazzes = value.split(",");
       for (String clazz : clazzes) {
         if (!clazz.isEmpty()) {
           @SuppressWarnings("unchecked")
           Class<? extends VFS> vfsImpl = (Class<? extends VFS>)Resources.classForName(clazz);
+          // 将自定义 VFS 实现类的Class对象保存到Configuration类中
           configuration.setVfsImpl(vfsImpl);
         }
       }
@@ -180,21 +182,29 @@ public class XMLConfigBuilder extends BaseBuilder {
   }
 
   private void loadCustomLogImpl(Properties props) {
+    // 获取 <setting> 标签name属性为logImpl的值
     Class<? extends Log> logImpl = resolveClass(props.getProperty("logImpl"));
+    // 保存到Configuration类中
     configuration.setLogImpl(logImpl);
   }
 
   private void typeAliasesElement(XNode parent) {
     if (parent != null) {
+      // 循环<typeAliases>标签下所有子标签
       for (XNode child : parent.getChildren()) {
         if ("package".equals(child.getName())) {
+          /* <package>标签，重点关注此分支，一般都是配置包扫描 */
           String typeAliasPackage = child.getStringAttribute("name");
+          // 从Configuration类中获取别名注册器TypeAliasRegistry，根据包路径扫描并注册相应的类
           configuration.getTypeAliasRegistry().registerAliases(typeAliasPackage);
         } else {
+          /* <typeAlias>标签 */
           String alias = child.getStringAttribute("alias");
           String type = child.getStringAttribute("type");
           try {
+            // 获取Class对象
             Class<?> clazz = Resources.classForName(type);
+            // 注册别名与Class对象的映射
             if (alias == null) {
               typeAliasRegistry.registerAlias(clazz);
             } else {
