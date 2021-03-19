@@ -41,6 +41,11 @@ public class VendorDatabaseIdProvider implements DatabaseIdProvider {
 
   private Properties properties;
 
+  /**
+   * getDatabaseId 方法用来给出当前传入的 DataSource 对象对应的 databaseId
+   * @param dataSource
+   * @return
+   */
   @Override
   public String getDatabaseId(DataSource dataSource) {
     if (dataSource == null) {
@@ -54,25 +59,48 @@ public class VendorDatabaseIdProvider implements DatabaseIdProvider {
     return null;
   }
 
+  /**
+   *     <databaseIdProvider type="DB_VENDOR">
+   *         <property name="MySQL" value="mysql" />
+   *         <property name="SQL Server" value="sqlserver" />
+   *     </databaseIdProvider>
+   *
+   * setProperties方法用来将MyBatis配置文件中设置在databaseIdProvider节点中的信息写入VendorDatabaseIdProvider对象中
+   * 这些信息实际是数据库的别名信息
+   * @param p
+   */
   @Override
   public void setProperties(Properties p) {
     this.properties = p;
   }
 
+  /**
+   * 获取当前的数据源类型的别名，
+   * getDatabaseName方法做了两个工作，首先是获取当前数据源的类型，然后是将数据源类型映射为我们在 databaseIdProvider节点中设置的别名。
+   * 这样，在需要执行 SQL语句时，就可以根据数据库操作节点中的 databaseId 设置对 SQL 语句进行筛选
+   * @param dataSource 数据源
+   * @return 数据源类型别名
+   * @throws SQLException
+   */
   private String getDatabaseName(DataSource dataSource) throws SQLException {
+    // 获取当前连接的数据库名，即获取数据库类型
     String productName = getDatabaseProductName(dataSource);
     if (this.properties != null) {
+      // 如果设置有properties值，则根据将获取的数据库名称作为模糊的key,映射为对应的value，即将数据源类型映射为我们在 databaseIdProvider节点中设置的别名。
       for (Map.Entry<Object, Object> property : properties.entrySet()) {
         if (productName.contains((String) property.getKey())) {
+          // 根据数据库类型去匹配，返回<property>标签中的value值
           return (String) property.getValue();
         }
       }
+      // 没有找到对应映射，返回null
       // no match, return null
       return null;
     }
     return productName;
   }
 
+  // 从连接中获取当前数据库的产品名
   private String getDatabaseProductName(DataSource dataSource) throws SQLException {
     Connection con = null;
     try {

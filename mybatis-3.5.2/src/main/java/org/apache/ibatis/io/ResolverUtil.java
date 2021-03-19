@@ -56,6 +56,14 @@ import org.apache.ibatis.logging.LogFactory;
  *
  * @author Tim Fennell
  */
+
+/**
+ * ResolverUtil是一个工具类，主要功能是完成类的筛选。这些筛选 条件可以是
+ * 类是否是某个接口或类的子类;
+ * 类是否具有某个注解
+ *
+ * @param <T>
+ */
 public class ResolverUtil<T> {
   /*
    * An instance of Log to use for logging in this class.
@@ -78,15 +86,26 @@ public class ResolverUtil<T> {
    * A Test that checks to see if each class is assignable to the provided class. Note
    * that this test will match the parent type itself if it is presented for matching.
    */
+  /**
+   * 类是否是某个接口或类的子类;
+   */
   public static class IsA implements Test {
     private Class<?> parent;
 
-    /** Constructs an IsA test using the supplied Class as the parent class/interface. */
+    /**
+     * Constructs an IsA test using the supplied Class as the parent class/interface.
+     */
     public IsA(Class<?> parentType) {
       this.parent = parentType;
     }
 
     /** Returns true if type is assignable to the parent type supplied in the constructor. */
+    /**
+     * 判断目标类是否实现了某个接口或者继承了某个类;
+     *
+     * @param type
+     * @return
+     */
     @Override
     public boolean matches(Class<?> type) {
       return type != null && parent.isAssignableFrom(type);
@@ -102,6 +121,9 @@ public class ResolverUtil<T> {
    * A Test that checks to see if each class is annotated with a specific annotation. If it
    * is, then the test returns true, otherwise false.
    */
+  /**
+   * 类是否具有某个注解
+   */
   public static class AnnotatedWith implements Test {
     private Class<? extends Annotation> annotation;
 
@@ -111,6 +133,12 @@ public class ResolverUtil<T> {
     }
 
     /** Returns true if the type is annotated with the class provided to the constructor. */
+    /**
+     * 可以判断目标类是否具有某 个注解。
+     *
+     * @param type
+     * @return
+     */
     @Override
     public boolean matches(Class<?> type) {
       return type != null && type.isAnnotationPresent(annotation);
@@ -123,6 +151,9 @@ public class ResolverUtil<T> {
   }
 
   /** The set of matches being accumulated. */
+  /**
+   * 最终通过校验的类会放到 ResolverUtil类的 matches属性中
+   */
   private Set<Class<? extends T>> matches = new HashSet<>();
 
   /**
@@ -213,13 +244,23 @@ public class ResolverUtil<T> {
    * @param packageName the name of the package from which to start scanning for
    *        classes, e.g. {@code net.sourceforge.stripes}
    */
+  /**
+   * 筛选出指定路径下符合一定条件的类
+   * @param test 测试条件
+   * @param packageName 路径
+   * @return 本身
+   */
   public ResolverUtil<T> find(Test test, String packageName) {
+    // 获取起始包路径，将“.”转成“/”
     String path = getPackagePath(packageName);
 
     try {
+      // 先获取VFS实例（用于扫描包），找出包中所有元素的名称集合（包含有文件名称、目录名称）
       List<String> children = VFS.getInstance().list(path);
       for (String child : children) {
+        // 对类文件进行筛选，必须时类文件
         if (child.endsWith(".class")) {
+          // 测试是否满足测试条件，如果满足，则将该类文件记录下来
           addIfMatching(test, child);
         }
       }
@@ -247,17 +288,26 @@ public class ResolverUtil<T> {
    * @param test the test used to determine if the class matches
    * @param fqn the fully qualified name of a class
    */
+  /**
+   * 判断一个类文件是否满足条件，如果满足，则记录下来
+   * @param test 测试条件
+   * @param fqn 类文件全名
+   */
   @SuppressWarnings("unchecked")
   protected void addIfMatching(Test test, String fqn) {
     try {
+      // 转化为外部名称
       String externalName = fqn.substring(0, fqn.indexOf('.')).replace('/', '.');
+      // 类加载器
       ClassLoader loader = getClassLoader();
       if (log.isDebugEnabled()) {
         log.debug("Checking to see if class " + externalName + " matches criteria [" + test + "]");
       }
-
+      // 加载类条件
       Class<?> type = loader.loadClass(externalName);
+      // 执行测试
       if (test.matches(type)) {
+        // 测试通过则记录到matches属性中
         matches.add((Class<T>) type);
       }
     } catch (Throwable t) {

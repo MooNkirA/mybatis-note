@@ -18,6 +18,9 @@
         <property name="password" value="F2Fa3!33TYyg"/>
     </properties>
 
+    <!-- 设置（settings）
+        这是 MyBatis 中极为重要的调整设置，它们会改变 MyBatis 的运行时行为。
+     -->
     <settings>
         <!--全局开启或关闭配置文件中的所有映射器已经配置的任何缓存，默认为true-->
         <setting name="cacheEnabled" value="true"/>
@@ -100,6 +103,15 @@
         <package name="com.moon.mybatis.pojo"/>
     </typeAliases>
 
+    <!-- 插件（plugins）
+        MyBatis 允许在映射语句执行过程中的某一点进行拦截调用
+     -->
+    <plugins>
+        <plugin interceptor="org.mybatis.example.ExamplePlugin">
+            <property name="someProperty" value="100"/>
+        </plugin>
+    </plugins>
+
     <!-- 环境配置 -->
     <environments default="development">
         <environment id="development">
@@ -115,7 +127,30 @@
                 <property name="password" value="${mybatis.password}"/>
             </dataSource>
         </environment>
+        <!-- 可以设置多套配置，根据default属性来选择具体使用哪一个 -->
+        <environment id="test">
+            <transactionManager type="JDBC"/>
+            <dataSource type="POOLED">
+                <property name="driver" value="xxx"/>
+                <property name="url" value="xx"/>
+                <property name="username" value="xxxx"/>
+                <property name="password" value="xxxx"/>
+            </dataSource>
+        </environment>
     </environments>
+
+    <!-- 数据库厂商标识
+        MyBatis 可以根据不同的数据库厂商执行不同的语句，这种多厂商的支持是基于映射语句中的 databaseId 属性。
+        MyBatis 会加载带有匹配当前数据库 databaseId 属性和所有不带 databaseId 属性的语句。
+        如果同时找到带有 databaseId 和不带 databaseId 的相同语句，则后者会被舍弃。
+        为支持多厂商特性，只要像下面这样在 mybatis-config.xml 文件中加入 databaseIdProvider 即可：
+    -->
+    <databaseIdProvider type="DB_VENDOR">
+        <property name="SQL Server" value="sqlserver"/>
+        <property name="DB2" value="db2"/>
+        <property name="Oracle" value="oracle" />
+        <property name="MySQL" value="mysql" />
+    </databaseIdProvider>
 
     <!-- 映射器 -->
     <mappers>

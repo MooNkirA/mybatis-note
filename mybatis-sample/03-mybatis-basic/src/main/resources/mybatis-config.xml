@@ -80,7 +80,8 @@
     <!-- 设置别名 -->
     <typeAliases>
         <!--<typeAlias type="com.moon.mybatis.pojo.ConsultConfigArea" alias="Area"/>-->
-        <package name="com.moon.mybatis.pojo"/>
+<!--        <package name="com.moon.mybatis.pojo"/>-->
+        <package name="com.moon"/>
     </typeAliases>
 
     <!-- 环境配置 -->

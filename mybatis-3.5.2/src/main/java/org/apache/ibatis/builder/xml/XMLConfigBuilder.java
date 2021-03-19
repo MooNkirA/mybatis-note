@@ -130,8 +130,9 @@ public class XMLConfigBuilder extends BaseBuilder {
       loadCustomLogImpl(settings);
       // 别名标签 <typeAliases> 扫描注册【重点】
       typeAliasesElement(root.evalNode("typeAliases"));
+      // 插件标签 <plugins> 的解析
       pluginElement(root.evalNode("plugins"));
-      // 解析Pojo对象工厂类
+      // 解析Pojo对象工厂类。可以用于自定义数据库与pojo对象的映射逻辑，一般都使用默认的【不重要】
       objectFactoryElement(root.evalNode("objectFactory"));
       objectWrapperFactoryElement(root.evalNode("objectWrapperFactory"));
       reflectorFactoryElement(root.evalNode("reflectorFactory"));
@@ -140,6 +141,7 @@ public class XMLConfigBuilder extends BaseBuilder {
       // read it after objectFactory and objectWrapperFactory issue #631
       // 解析环境标签
       environmentsElement(root.evalNode("environments"));
+      // 解析数据库厂商标识（databaseIdProvider）
       databaseIdProviderElement(root.evalNode("databaseIdProvider"));
       // 解析类型转换器
       typeHandlerElement(root.evalNode("typeHandlers"));
@@ -195,7 +197,7 @@ public class XMLConfigBuilder extends BaseBuilder {
         if ("package".equals(child.getName())) {
           /* <package>标签，重点关注此分支，一般都是配置包扫描 */
           String typeAliasPackage = child.getStringAttribute("name");
-          // 从Configuration类中获取别名注册器TypeAliasRegistry，根据包路径扫描并注册相应的类
+          // 从Configuration类中获取别名注册器TypeAliasRegistry，根据包路径扫描并注册相应的类与别名的映射
           configuration.getTypeAliasRegistry().registerAliases(typeAliasPackage);
         } else {
           /* <typeAlias>标签 */
@@ -225,17 +227,20 @@ public class XMLConfigBuilder extends BaseBuilder {
    * @throws Exception
    */
   private void pluginElement(XNode parent) throws Exception {
-    if (parent != null) { // <plugins> 节点村子啊
-      for (XNode child : parent.getChildren()) { // 依次取出<plugins>节点下的每个<plugin>节点
+    // 如配置中有 <plugins> 节点
+    if (parent != null) {
+      // 依次取出<plugins>节点下的每个<plugin>节点
+      for (XNode child : parent.getChildren()) {
         // 读取拦截器名称
         String interceptor = child.getStringAttribute("interceptor");
         // 读取拦截器属性
         Properties properties = child.getChildrenAsProperties();
-        // 实例化拦截器类
+        // 实例化拦截器类，resolveClass方法会根据配置中的interceptor属性去匹配相应的别名，获取Class对象
+        // 再反射获取类实例
         Interceptor interceptorInstance = (Interceptor) resolveClass(interceptor).newInstance();
         // 设置拦截器属性
         interceptorInstance.setProperties(properties);
-        // 将当前拦截器加入到拦截器链中
+        // 将当前拦截器加入到拦截器链中（存储在Configuration类）
         configuration.addInterceptor(interceptorInstance);
       }
     }
@@ -290,6 +295,7 @@ public class XMLConfigBuilder extends BaseBuilder {
     }
   }
 
+  /* 逐个<setting>标签设置值到Configuration类中 */
   private void settingsElement(Properties props) {
     configuration.setAutoMappingBehavior(AutoMappingBehavior.valueOf(props.getProperty("autoMappingBehavior", "PARTIAL")));
     configuration.setAutoMappingUnknownColumnBehavior(AutoMappingUnknownColumnBehavior.valueOf(props.getProperty("autoMappingUnknownColumnBehavior", "NONE")));
@@ -322,17 +328,23 @@ public class XMLConfigBuilder extends BaseBuilder {
   private void environmentsElement(XNode context) throws Exception {
     if (context != null) {
       if (environment == null) {
+        // 获取default属性的值
         environment = context.getStringAttribute("default");
       }
       for (XNode child : context.getChildren()) {
+        // 获取子标签<environment>的id属性
         String id = child.getStringAttribute("id");
+        // 判断id是否与父标签中的default属性一致
         if (isSpecifiedEnvironment(id)) {
+          // 根据别名，分别获取transactionManager与dataSource配置的相应实现类
           TransactionFactory txFactory = transactionManagerElement(child.evalNode("transactionManager"));
           DataSourceFactory dsFactory = dataSourceElement(child.evalNode("dataSource"));
           DataSource dataSource = dsFactory.getDataSource();
-          Environment.Builder environmentBuilder = new Environment.Builder(id)
-              .transactionFactory(txFactory)
-              .dataSource(dataSource);
+          // Environment的Builder建造者
+          Environment.Builder environmentBuilder = new Environment.Builder(id) // 设置配置的id属性
+              .transactionFactory(txFactory) // 设置事务工厂
+              .dataSource(dataSource); // 设置数据源信息
+          // 创建Environment实例并设置到Configuration类中
           configuration.setEnvironment(environmentBuilder.build());
         }
       }
@@ -342,18 +354,24 @@ public class XMLConfigBuilder extends BaseBuilder {
   private void databaseIdProviderElement(XNode context) throws Exception {
     DatabaseIdProvider databaseIdProvider = null;
     if (context != null) {
+      // 获取type属性值
       String type = context.getStringAttribute("type");
       // awful patch to keep backward compatibility
       if ("VENDOR".equals(type)) {
         type = "DB_VENDOR";
       }
+      // 获取子标签<property>的配置值，封装成Properties对象
       Properties properties = context.getChildrenAsProperties();
+      // 根据type的别名，找到相应的实现类，创建该实例
       databaseIdProvider = (DatabaseIdProvider) resolveClass(type).newInstance();
+      // 设置属性值
       databaseIdProvider.setProperties(properties);
     }
     Environment environment = configuration.getEnvironment();
     if (environment != null && databaseIdProvider != null) {
+      // 获取当前数据源的类型，最终会返回databaseIdProvider标签的property子标签的value值
       String databaseId = databaseIdProvider.getDatabaseId(environment.getDataSource());
+      // 设置到Configuration类中
       configuration.setDatabaseId(databaseId);
     }
   }
@@ -387,7 +405,7 @@ public class XMLConfigBuilder extends BaseBuilder {
     if (context != null) {
       // 通过这里的类型判断数据源类型，例如POOLED、UNPOOLED、JNDI
       String type = context.getStringAttribute("type");
-      // 获取dataSource节点下配置的property
+      // 获取dataSource节点下配置的property标签的值，封装成Properties对象
       Properties props = context.getChildrenAsProperties();
       // 根据dataSource的type值获取相应的DataSourceFactory对象
       DataSourceFactory factory = (DataSourceFactory) resolveClass(type).newInstance();

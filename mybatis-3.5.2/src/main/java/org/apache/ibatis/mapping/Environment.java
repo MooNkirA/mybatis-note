@@ -22,9 +22,16 @@ import org.apache.ibatis.transaction.TransactionFactory;
 /**
  * @author Clinton Begin
  */
+
+/**
+ * 对应了配置文件中的envir onments节点
+ */
 public final class Environment {
+  // 编号
   private final String id;
+  // 事务工厂
   private final TransactionFactory transactionFactory;
+  // 数据源信息
   private final DataSource dataSource;
 
   public Environment(String id, TransactionFactory transactionFactory, DataSource dataSource) {
