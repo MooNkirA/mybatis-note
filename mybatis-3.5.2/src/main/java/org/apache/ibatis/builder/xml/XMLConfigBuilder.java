@@ -143,9 +143,9 @@ public class XMLConfigBuilder extends BaseBuilder {
       environmentsElement(root.evalNode("environments"));
       // 解析数据库厂商标识（databaseIdProvider）
       databaseIdProviderElement(root.evalNode("databaseIdProvider"));
-      // 解析类型转换器
+      // 解析类型转换器，即解析<typeHandlers>标签，注册（建立）类型处理器的映射关系
       typeHandlerElement(root.evalNode("typeHandlers"));
-      // 解析mappers
+      // 解析mappers映射器标签
       mapperElement(root.evalNode("mappers"));
     } catch (Exception e) {
       throw new BuilderException("Error parsing SQL Mapper Configuration. Cause: " + e, e);
@@ -418,17 +418,24 @@ public class XMLConfigBuilder extends BaseBuilder {
 
   private void typeHandlerElement(XNode parent) {
     if (parent != null) {
+      // 循环typeHandlers标签的所有子节点
       for (XNode child : parent.getChildren()) {
+        // 判断子节点类型
         if ("package".equals(child.getName())) {
+          // package子标签
           String typeHandlerPackage = child.getStringAttribute("name");
+          // 根据配置的包路径，去扫描并注册该包下的类型处理器
           typeHandlerRegistry.register(typeHandlerPackage);
         } else {
+          // typeHandler子标签
           String javaTypeName = child.getStringAttribute("javaType");
           String jdbcTypeName = child.getStringAttribute("jdbcType");
           String handlerTypeName = child.getStringAttribute("handler");
+          // 同样的方式，根据配置的别名去获取相应的Class对象
           Class<?> javaTypeClass = resolveClass(javaTypeName);
           JdbcType jdbcType = resolveJdbcType(jdbcTypeName);
           Class<?> typeHandlerClass = resolveClass(handlerTypeName);
+          // 注册类型处理器
           if (javaTypeClass != null) {
             if (jdbcType == null) {
               typeHandlerRegistry.register(javaTypeClass, typeHandlerClass);
@@ -454,15 +461,16 @@ public class XMLConfigBuilder extends BaseBuilder {
    */
   private void mapperElement(XNode parent) throws Exception {
     if (parent != null) {
+      // 处理mappers的子节点，即mapper节点或者package节点
       for (XNode child : parent.getChildren()) {
-        // 处理mappers的子节点，即mapper节点或者package节点
-        if ("package".equals(child.getName())) { // package节点
+        // package节点
+        if ("package".equals(child.getName())) {
           // 取出包路径
           String mapperPackage = child.getStringAttribute("name");
           // 全部加入Mappers中
           configuration.addMappers(mapperPackage);
         } else {
-          // resource、url、class这三个属性只有一个生效
+          // 单独配置的mapper节点。注意：resource、url、class这三个属性只有一个生效
           String resource = child.getStringAttribute("resource");
           String url = child.getStringAttribute("url");
           String mapperClass = child.getStringAttribute("class");
@@ -483,6 +491,7 @@ public class XMLConfigBuilder extends BaseBuilder {
           } else if (resource == null && url == null && mapperClass != null) {
             // 配置的不是映射文件，而是映射接口
             Class<?> mapperInterface = Resources.classForName(mapperClass);
+            // 直接加到
             configuration.addMapper(mapperInterface);
           } else {
             throw new BuilderException("A mapper element may only specify a url, resource or class, but not more than one.");

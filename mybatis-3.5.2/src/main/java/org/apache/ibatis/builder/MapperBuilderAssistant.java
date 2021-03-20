@@ -50,6 +50,8 @@ import org.apache.ibatis.type.JdbcType;
 import org.apache.ibatis.type.TypeHandler;
 
 /**
+ * MapperBuilderAssistant 类提供了许多辅助方法，如 Mapper 命 名空间的设置、缓存的创建、鉴别器的创建等
+ *
  * @author Clinton Begin
  */
 public class MapperBuilderAssistant extends BaseBuilder {
@@ -103,16 +105,24 @@ public class MapperBuilderAssistant extends BaseBuilder {
     return currentNamespace + "." + base;
   }
 
+  /**
+   * 使用其他namespace的缓存
+   *
+   * @param namespace 其他的namespace
+   * @return 其他namespace的缓存
+   */
   public Cache useCacheRef(String namespace) {
     if (namespace == null) {
       throw new BuilderException("cache-ref element requires a namespace attribute.");
     }
     try {
       unresolvedCacheRef = true;
+      // 获取其他的namespace缓存
       Cache cache = configuration.getCache(namespace);
       if (cache == null) {
         throw new IncompleteElementException("No cache for namespace '" + namespace + "' could be found.");
       }
+      // 修改当前缓存为其他namespace缓存，从而实现缓存共享
       currentCache = cache;
       unresolvedCacheRef = false;
       return cache;
@@ -121,6 +131,17 @@ public class MapperBuilderAssistant extends BaseBuilder {
     }
   }
 
+  /**
+   * 创建一个新的缓存
+   * @param typeClass 缓存的实现类
+   * @param evictionClass 缓存的清理类，即使用哪种包装类来清理缓存
+   * @param flushInterval 缓存清理时间间隔
+   * @param size 缓存大小
+   * @param readWrite 缓存是否支持读写
+   * @param blocking 缓存是否支持阻塞
+   * @param props 缓存配置属性
+   * @return 缓存
+   */
   public Cache useNewCache(Class<? extends Cache> typeClass,
       Class<? extends Cache> evictionClass,
       Long flushInterval,
@@ -173,6 +194,11 @@ public class MapperBuilderAssistant extends BaseBuilder {
         .build();
   }
 
+  /**
+   * 创建结果映射对象
+   * @param id 输入参数参照 ResultMapResolver 属性
+   * @return ResultMap对象
+   */
   public ResultMap addResultMap(
       String id,
       Class<?> type,
@@ -183,14 +209,20 @@ public class MapperBuilderAssistant extends BaseBuilder {
     id = applyCurrentNamespace(id, false);
     extend = applyCurrentNamespace(extend, true);
 
+    // 解析ResultMap的继承关系
     if (extend != null) {
+	  // 如果存在ResultMap的继承
       if (!configuration.hasResultMap(extend)) {
         throw new IncompleteElementException("Could not find a parent resultmap with id '" + extend + "'");
       }
+      // 获取父级的ResultMap
       ResultMap resultMap = configuration.getResultMap(extend);
+      // 获取父级的属性映射
       List<ResultMapping> extendedResultMappings = new ArrayList<>(resultMap.getResultMappings());
+      // 删除当前ResultMap中已有的父级属性映射，为当前属性映射覆盖父级属性创造条件
       extendedResultMappings.removeAll(resultMappings);
       // Remove parent constructor if this resultMap declares a constructor.
+      // 如果当前ResultMap设置有构建器，则移除父级构建器
       boolean declaresConstructor = false;
       for (ResultMapping resultMapping : resultMappings) {
         if (resultMapping.getFlags().contains(ResultFlag.CONSTRUCTOR)) {
@@ -201,11 +233,14 @@ public class MapperBuilderAssistant extends BaseBuilder {
       if (declaresConstructor) {
         extendedResultMappings.removeIf(resultMapping -> resultMapping.getFlags().contains(ResultFlag.CONSTRUCTOR));
       }
+      // 最终从父级继承而来的所有属性映射
       resultMappings.addAll(extendedResultMappings);
     }
+    // 创建当前的ResultMap
     ResultMap resultMap = new ResultMap.Builder(configuration, id, type, resultMappings, autoMapping)
         .discriminator(discriminator)
         .build();
+    // 将当前的ResultMap加入configuration
     configuration.addResultMap(resultMap);
     return resultMap;
   }
