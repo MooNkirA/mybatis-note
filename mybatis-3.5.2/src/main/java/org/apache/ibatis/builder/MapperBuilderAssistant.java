@@ -211,7 +211,7 @@ public class MapperBuilderAssistant extends BaseBuilder {
 
     // 解析ResultMap的继承关系
     if (extend != null) {
-	  // 如果存在ResultMap的继承
+	    // 如果存在ResultMap的继承
       if (!configuration.hasResultMap(extend)) {
         throw new IncompleteElementException("Could not find a parent resultmap with id '" + extend + "'");
       }
@@ -329,6 +329,8 @@ public class MapperBuilderAssistant extends BaseBuilder {
     }
 
     MappedStatement statement = statementBuilder.build();
+    // 将MappedStatement实例加入到Configuration类的 Map<String, MappedStatement> mappedStatements 属性中，
+    // 并建立id与MappedStatement的映射关系
     configuration.addMappedStatement(statement);
     return statement;
   }

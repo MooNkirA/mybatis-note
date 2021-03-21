@@ -38,9 +38,18 @@ public class XMLLanguageDriver implements LanguageDriver {
     return new DefaultParameterHandler(mappedStatement, parameterObject, boundSql);
   }
 
+  /**
+   * SqlSource 对象主要由 XMLScriptBuilder 的 parseScriptNode 方法生成
+   * @param configuration 配置信息
+   * @param script 映射文件中的数据库操作节点
+   * @param parameterType 参数类型
+   * @return SqlSource
+   */
   @Override
   public SqlSource createSqlSource(Configuration configuration, XNode script, Class<?> parameterType) {
+    // 创建XMLScriptBuilder实例
     XMLScriptBuilder builder = new XMLScriptBuilder(configuration, script, parameterType);
+    // 解析操作语句标签核心方法
     return builder.parseScriptNode();
   }
 
@@ -48,10 +57,12 @@ public class XMLLanguageDriver implements LanguageDriver {
   public SqlSource createSqlSource(Configuration configuration, String script, Class<?> parameterType) {
     // issue #3
     if (script.startsWith("<script>")) {
+      // 对于以“<script>”开头的 SQL语句，将使用和映射文件相同的解析方式，从而生成 DynamicSqlSource对象或者 RawSqlSource对 象
       XPathParser parser = new XPathParser(script, false, configuration.getVariables(), new XMLMapperEntityResolver());
       return createSqlSource(configuration, parser.evalNode("/script"), parameterType);
     } else {
       // issue #127
+      // 对于不以“<script>”开头的 SQL 语句，则直接生成 DynamicSqlSource 对象或者RawSqlSource对象
       script = PropertyParser.parse(script, configuration.getVariables());
       TextSqlNode textSqlNode = new TextSqlNode(script);
       if (textSqlNode.isDynamic()) {

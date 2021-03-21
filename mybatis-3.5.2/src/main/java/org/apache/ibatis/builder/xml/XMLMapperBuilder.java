@@ -145,10 +145,12 @@ public class XMLMapperBuilder extends BaseBuilder {
       cacheRefElement(context.evalNode("cache-ref"));
       cacheElement(context.evalNode("cache"));
       parameterMapElement(context.evalNodes("/mapper/parameterMap"));
-      // 重点关注一下 resultMap 的处理逻辑
+      // 重点关注以下两个解析
+      // resultMap 标签的解析逻辑
       resultMapElements(context.evalNodes("/mapper/resultMap"));
+      // sql 标签的解析逻辑
       sqlElement(context.evalNodes("/mapper/sql"));
-      // 处理各个数据库操作语句
+      // 处理各个数据库操作语句。重要程度【5】
       buildStatementFromContext(context.evalNodes("select|insert|update|delete"));
     } catch (Exception e) {
       throw new BuilderException("Error parsing Mapper XML. The XML location is '" + resource + "'. Cause: " + e, e);
@@ -156,6 +158,7 @@ public class XMLMapperBuilder extends BaseBuilder {
   }
 
   private void buildStatementFromContext(List<XNode> list) {
+    // 同样会判断是否有配置了数据库厂商标识databaseId
     if (configuration.getDatabaseId() != null) {
       buildStatementFromContext(list, configuration.getDatabaseId());
     }
@@ -164,6 +167,7 @@ public class XMLMapperBuilder extends BaseBuilder {
 
   private void buildStatementFromContext(List<XNode> list, String requiredDatabaseId) {
     for (XNode context : list) {
+      // 创建xml配置文件中数据库操作语句（Statement）解析类
       final XMLStatementBuilder statementParser = new XMLStatementBuilder(configuration, builderAssistant, context, requiredDatabaseId);
       try {
         statementParser.parseStatementNode();
@@ -375,17 +379,25 @@ public class XMLMapperBuilder extends BaseBuilder {
   }
 
   private void sqlElement(List<XNode> list) {
+    // 判断是否有配置了数据库厂商标识databaseId（用于判断数据库的类型）
     if (configuration.getDatabaseId() != null) {
       sqlElement(list, configuration.getDatabaseId());
     }
     sqlElement(list, null);
   }
 
+  /**
+   * 建立sql标签的 id 与标签内容的映射关系
+   * @param list sql标签集合
+   * @param requiredDatabaseId 总配置文件中 databaseIdProvider 标签对应当前数据库类型
+   */
   private void sqlElement(List<XNode> list, String requiredDatabaseId) {
     for (XNode context : list) {
       String databaseId = context.getStringAttribute("databaseId");
       String id = context.getStringAttribute("id");
       id = builderAssistant.applyCurrentNamespace(id, false);
+      // 这里会判断当前的sql标签所配置的databaseId属性值是否与当前数据库标识databaseId是否匹配
+      // 如果不匹配，则不会建立映射关系。（注：databaseIdMatchesCurrent方法中会包含几种空值的情况判断）
       if (databaseIdMatchesCurrent(id, databaseId, requiredDatabaseId)) {
         sqlFragments.put(id, context);
       }
@@ -394,12 +406,16 @@ public class XMLMapperBuilder extends BaseBuilder {
 
   private boolean databaseIdMatchesCurrent(String id, String databaseId, String requiredDatabaseId) {
     if (requiredDatabaseId != null) {
+      // 判断两个databaseId是否一样
       return requiredDatabaseId.equals(databaseId);
     }
+    // 如果没有配置了数据库厂商标识（即为空），但sql标签配置了databaseId属性，则返回false
     if (databaseId != null) {
       return false;
     }
+    // 代码执行到这里，代表没有配置数据库厂商标识，当前sql标签也没有配置databaseId属性
     if (!this.sqlFragments.containsKey(id)) {
+      // 当前sql标签的id没有映射
       return true;
     }
     // skip this fragment if there is a previous one with a not null databaseId
@@ -481,7 +497,9 @@ public class XMLMapperBuilder extends BaseBuilder {
           // Spring may not know the real resource name so we set a flag
           // to prevent loading again this resource from the mapper interface
           // look at MapperAnnotationBuilder#loadXmlResource
+          // 加入到Configuration对象中的 Set<String> loadedResources 属性，用于判断是否已加载
           configuration.addLoadedResource("namespace:" + namespace);
+          // 将相应的Mapper接口Class对象加入到 Configuration 对象中的 MapperRegistry mapperRegistry 属性中
           configuration.addMapper(boundType);
         }
       }

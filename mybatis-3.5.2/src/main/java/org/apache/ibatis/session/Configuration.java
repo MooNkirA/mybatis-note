@@ -713,6 +713,7 @@ public class Configuration {
   }
 
   public void addResultMap(ResultMap rm) {
+    // 建立 id 与 ResultMap 的映射关系
     resultMaps.put(rm.getId(), rm);
     checkLocallyForDiscriminatedNestedResultMaps(rm);
     checkGloballyForDiscriminatedNestedResultMaps(rm);
@@ -828,6 +829,7 @@ public class Configuration {
   }
 
   public <T> void addMapper(Class<T> type) {
+    // 注册Mapper映射
     mapperRegistry.addMapper(type);
   }
 

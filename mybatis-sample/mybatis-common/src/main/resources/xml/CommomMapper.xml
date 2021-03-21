@@ -75,6 +75,22 @@
         `areaCode`,`areaName`,`state`
     </sql>
 
+    <!-- ******************************* databaseId 配置示例 start ********************************************** -->
+    <!-- sql标签与select、insert、update、delete这四类标签，均可以配置databaseId属性，
+        就会判断配置的databaseId是否与当前数据库厂商标识databaseId是否匹配。
+        如匹配，才会解析该标签（即建立映射关系，并保存到Configuration类中）
+     -->
+    <sql id="sql_databaseId_demo" databaseId="oracle">
+        a,b,c
+    </sql>
+
+    <select id="select_databaseId_demo" databaseId="oracle">
+        select
+        <include refid="sql_databaseId_demo"/>
+        from table_abc
+    </select>
+    <!-- *******************************  databaseId 配置示例 end  ********************************************** -->
+
     <!-- resultMap映射，返回多个数据
         设置 flushCache="true"，关闭此查询语句的一级缓存
         当此命名空间开启了二级缓存，设置 useCache="false"，关闭此查询语句的二级缓存

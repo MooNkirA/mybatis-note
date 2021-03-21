@@ -80,7 +80,7 @@
     <!-- 设置别名 -->
     <typeAliases>
         <!--<typeAlias type="com.moon.mybatis.pojo.ConsultConfigArea" alias="Area"/>-->
-<!--        <package name="com.moon.mybatis.pojo"/>-->
+        <!--<package name="com.moon.mybatis.pojo"/>-->
         <package name="com.moon"/>
     </typeAliases>
 
@@ -96,6 +96,17 @@
             </dataSource>
         </environment>
     </environments>
+
+    <!-- 数据库厂商标识 此示例使用了MySQL数据库，
+        所以最终会Configuration类中的databaseId属性存入值为"mysql"
+    -->
+    <!--<databaseIdProvider type="DB_VENDOR">
+        <property name="SQL Server" value="sqlserver"/>
+        <property name="DB2" value="db2"/>
+        <property name="Oracle" value="oracle" />
+        <property name="MySQL" value="mysql" />
+    </databaseIdProvider>-->
+
     <!-- 映射器 -->
     <mappers>
         <!-- 使用相对于类路径的资源引用 -->

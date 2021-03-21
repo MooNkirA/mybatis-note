@@ -30,13 +30,18 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
+ * SQL 节点树的解析由 XMLScriptBuilder 类负责
  * @author Clinton Begin
  */
 public class XMLScriptBuilder extends BaseBuilder {
 
+  // 当期要处理的XML节点
   private final XNode context;
+  // 当前节点是否为动态节点
   private boolean isDynamic;
+  // 输入参数的类型
   private final Class<?> parameterType;
+  // 节点类型和对应的处理器组成的Map
   private final Map<String, NodeHandler> nodeHandlerMap = new HashMap<>();
 
   public XMLScriptBuilder(Configuration configuration, XNode context) {
@@ -51,6 +56,10 @@ public class XMLScriptBuilder extends BaseBuilder {
   }
 
 
+  /**
+   * 初始化 SQL节点中相应的动态标签和 NodeHandler 实现类的对应关系。存储到 nodeHandlerMap 容器中。
+   * 扩展知识：可以尝试改成SPI的方式完成处理类的映射？！
+   */
   private void initNodeHandlerMap() {
     nodeHandlerMap.put("trim", new TrimHandler());
     nodeHandlerMap.put("where", new WhereHandler());
@@ -63,9 +72,15 @@ public class XMLScriptBuilder extends BaseBuilder {
     nodeHandlerMap.put("bind", new BindHandler());
   }
 
+  /**
+   * 解析节点生成SqlSource对象
+   * @return SqlSource对象
+   */
   public SqlSource parseScriptNode() {
+    // 解析XML节点，得到节点树 MixedSqlNode
     MixedSqlNode rootSqlNode = parseDynamicTags(context);
     SqlSource sqlSource;
+    // 根据节点树是否为动态，创建对应的SqlSource对象
     if (isDynamic) {
       sqlSource = new DynamicSqlSource(configuration, rootSqlNode);
     } else {
@@ -74,34 +89,59 @@ public class XMLScriptBuilder extends BaseBuilder {
     return sqlSource;
   }
 
+  /**
+   * 将 XNode 对象解析为节点树
+   * parseDynamicTags 会逐级分析 XML 文件中的节点并使用对应的NodeHandler 实现来处理该节点，
+   * 最终将所有的节点整合到一个 MixedSqlNode 对象中。MixedSqlNode对象就是 SQL节点树。
+   *
+   * 在整合节点树的过程中，只要存在一个动态节点，则 SQL节点树就是动态的。动态的SQL节点树将用来创建 DynamicSqlSource对象，否则就创建 RawSqlSource对象
+   *
+   * @param node XNode对象，即数据库操作节点
+   * @return 解析后得到的节点树
+   */
   protected MixedSqlNode parseDynamicTags(XNode node) {
+    // 将 XNode 按层级拆分出的 SqlNode 列表
     List<SqlNode> contents = new ArrayList<>();
+    // 获取 XNode 的子XNode
     NodeList children = node.getNode().getChildNodes();
     for (int i = 0; i < children.getLength(); i++) {
+      // 循环遍历每一个子XNode
       XNode child = node.newXNode(children.item(i));
       if (child.getNode().getNodeType() == Node.CDATA_SECTION_NODE || child.getNode().getNodeType() == Node.TEXT_NODE) {
+        // 判断是CDATA类型或者text类型的XNode节点。获取XNode内的信息
         String data = child.getStringBody("");
         TextSqlNode textSqlNode = new TextSqlNode(data);
+        // 只要有一个TextSqlNode对象是动态的，则整个MixedSqlNode就是动态的
         if (textSqlNode.isDynamic()) {
           contents.add(textSqlNode);
           isDynamic = true;
         } else {
+          // 如果当前节点是非动态的，转纯文本 StaticTextSqlNode 对象
           contents.add(new StaticTextSqlNode(data));
         }
       } else if (child.getNode().getNodeType() == Node.ELEMENT_NODE) { // issue #628
+	  	  // 判断如果子XNode类型还是XNode类型，获取标签的名称
         String nodeName = child.getNode().getNodeName();
+        // 根据节点名称，找到对应的节点处理器
         NodeHandler handler = nodeHandlerMap.get(nodeName);
         if (handler == null) {
           throw new BuilderException("Unknown element <" + nodeName + "> in SQL statement.");
         }
+        // 用处理器处理节点
         handler.handleNode(child, contents);
         isDynamic = true;
       }
     }
+    // 返回一个混合节点，其实就是一个SQL节点树
     return new MixedSqlNode(contents);
   }
 
   private interface NodeHandler {
+    /**
+     * 该方法将当前节点拼装到节点树中
+     * @param nodeToHandle 要被拼接的节点
+     * @param targetContents 节点树
+     */
     void handleNode(XNode nodeToHandle, List<SqlNode> targetContents);
   }
 
@@ -126,6 +166,7 @@ public class XMLScriptBuilder extends BaseBuilder {
 
     @Override
     public void handleNode(XNode nodeToHandle, List<SqlNode> targetContents) {
+      // 递归调用parseDynamicTags方法，解析该节点的下级节点
       MixedSqlNode mixedSqlNode = parseDynamicTags(nodeToHandle);
       String prefix = nodeToHandle.getStringAttribute("prefix");
       String prefixOverrides = nodeToHandle.getStringAttribute("prefixOverrides");
@@ -143,6 +184,7 @@ public class XMLScriptBuilder extends BaseBuilder {
 
     @Override
     public void handleNode(XNode nodeToHandle, List<SqlNode> targetContents) {
+      // 递归调用parseDynamicTags方法，解析该节点的下级节点
       MixedSqlNode mixedSqlNode = parseDynamicTags(nodeToHandle);
       WhereSqlNode where = new WhereSqlNode(configuration, mixedSqlNode);
       targetContents.add(where);
@@ -156,6 +198,7 @@ public class XMLScriptBuilder extends BaseBuilder {
 
     @Override
     public void handleNode(XNode nodeToHandle, List<SqlNode> targetContents) {
+      // 递归调用parseDynamicTags方法，解析该节点的下级节点
       MixedSqlNode mixedSqlNode = parseDynamicTags(nodeToHandle);
       SetSqlNode set = new SetSqlNode(configuration, mixedSqlNode);
       targetContents.add(set);
@@ -169,6 +212,7 @@ public class XMLScriptBuilder extends BaseBuilder {
 
     @Override
     public void handleNode(XNode nodeToHandle, List<SqlNode> targetContents) {
+      // 递归调用parseDynamicTags方法，解析该节点的下级节点
       MixedSqlNode mixedSqlNode = parseDynamicTags(nodeToHandle);
       String collection = nodeToHandle.getStringAttribute("collection");
       String item = nodeToHandle.getStringAttribute("item");
@@ -186,11 +230,20 @@ public class XMLScriptBuilder extends BaseBuilder {
       // Prevent Synthetic Access
     }
 
+    /**
+     * 该方法将当前节点拼装到节点树中
+     * @param nodeToHandle 要被拼接的节点
+     * @param targetContents 节点树
+     */
     @Override
     public void handleNode(XNode nodeToHandle, List<SqlNode> targetContents) {
+      // 递归调用parseDynamicTags方法，解析该节点的下级节点
       MixedSqlNode mixedSqlNode = parseDynamicTags(nodeToHandle);
+      // 获取该节点的test属性
       String test = nodeToHandle.getStringAttribute("test");
+      // 创建一个IfSqlNode
       IfSqlNode ifSqlNode = new IfSqlNode(mixedSqlNode, test);
+      // 将创建的IfSqlNode放到SQL节点树中
       targetContents.add(ifSqlNode);
     }
   }
@@ -202,6 +255,7 @@ public class XMLScriptBuilder extends BaseBuilder {
 
     @Override
     public void handleNode(XNode nodeToHandle, List<SqlNode> targetContents) {
+      // 递归调用parseDynamicTags方法，解析该节点的下级节点
       MixedSqlNode mixedSqlNode = parseDynamicTags(nodeToHandle);
       targetContents.add(mixedSqlNode);
     }
