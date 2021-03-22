@@ -667,7 +667,7 @@ public class Configuration {
       // 使用CachingExecutor装饰实际的执行器
       executor = new CachingExecutor(executor);
     }
-    // 为执行器增加拦截器（插件），以启用各个拦截器的功能
+    // 为执行器增加拦截器（插件），以启用各个拦截器的功能【重点】
     executor = (Executor) interceptorChain.pluginAll(executor);
     return executor;
   }

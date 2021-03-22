@@ -6,12 +6,6 @@
     <cache eviction="FIFO" flushInterval="60000" size="512" readOnly="true"/>
 
     <!-- 基础结果集映射，使用类的完全限定名的方式指定type -->
-    <resultMap id="AreaResultMap" type="com.moon.mybatis.pojo.ConsultConfigArea">
-        <result column="AREACODE" property="areaCode" jdbcType="VARCHAR"/>
-        <result column="AREANAME" property="areaName" jdbcType="VARCHAR"/>
-        <result column="STATE" property="state"/>
-    </resultMap>
-
     <resultMap id="ContractResultMap" type="com.moon.mybatis.pojo.ConsultContractCardInfo">
         <id column="CONTRACT_ID" property="contractId"/>
         <result column="PSPTID" property="psptId"/>
@@ -70,11 +64,6 @@
         <collection property="contractCardInfoList" javaType="java.util.List" resultMap="ContractResultMap"/>
     </resultMap>
 
-    <!-- SQL片段 -->
-    <sql id="queryAreaByAreaCodesql">
-        `areaCode`,`areaName`,`state`
-    </sql>
-
     <!-- ******************************* databaseId 配置示例 start ********************************************** -->
     <!-- sql标签与select、insert、update、delete这四类标签，均可以配置databaseId属性，
         就会判断配置的databaseId是否与当前数据库厂商标识databaseId是否匹配。
@@ -95,10 +84,8 @@
         设置 flushCache="true"，关闭此查询语句的一级缓存
         当此命名空间开启了二级缓存，设置 useCache="false"，关闭此查询语句的二级缓存
      -->
-    <select id="queryAreaByAreaCode" parameterType="java.util.Map" resultMap="AreaResultMap">
-        select
-        <include refid="queryAreaByAreaCodesql"/>
-        from consult_configarea
+    <select id="queryContracts" resultMap="ContractResultMap">
+        select * from consult_contract
     </select>
 
     <!-- 连表查询单条数据，使用 association 复杂类型的关联 -->

@@ -1,6 +1,5 @@
 package com.moon.mybatis.dao;
 
-import com.moon.mybatis.pojo.ConsultConfigArea;
 import com.moon.mybatis.pojo.ConsultContract;
 import com.moon.mybatis.pojo.ConsultContractCardInfoWithIdCardInfo;
 import com.moon.mybatis.pojo.ConsultIdCardInfo;
@@ -21,7 +20,7 @@ import java.util.Map;
 public interface CommonMapper {
 
     /* 返回多条数据的resultMap测试 */
-    List<ConsultConfigArea> queryAreaByAreaCode(Map<String, Object> param);
+    List<ConsultContract> queryContracts();
 
     /* 多表联合查询，单条数据中包含单条关联表的数据，resultMap的association使用测试 */
     ConsultContractCardInfoWithIdCardInfo queryContractOnebyCardId();

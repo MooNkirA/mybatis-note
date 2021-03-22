@@ -87,13 +87,26 @@ public class DefaultSqlSessionFactory implements SqlSessionFactory {
     return configuration;
   }
 
+  /**
+   * 从数据源中获取SqlSession对象
+   * @param execType 执行器类型
+   * @param level 事务隔离级别
+   * @param autoCommit 是否自动提交事务
+   * @return SqlSession对象
+   */
   private SqlSession openSessionFromDataSource(ExecutorType execType, TransactionIsolationLevel level, boolean autoCommit) {
     Transaction tx = null;
     try {
+      // 获取配置中使用的指定环境。如xml配置中，<environment>配置
       final Environment environment = configuration.getEnvironment();
+      // 从环境中获取相应的事务工厂
       final TransactionFactory transactionFactory = getTransactionFactoryFromEnvironment(environment);
+      // 从事务工厂中创建事务实例，配置 JDBC 对应的事务实例是 JdbcTransactionFactory；MANAGED 对应事务实例是 ManagedTransactionFactory
+      // 注：MyBatis有自己的事务的管理器，但一般项目都与spring整合，事务都用spring来管理
       tx = transactionFactory.newTransaction(environment.getDataSource(), level, autoCommit);
+      // 根据配置的执行器类型，创建相应的执行器
       final Executor executor = configuration.newExecutor(tx, execType);
+      // 创建DefaultSqlSession对象
       return new DefaultSqlSession(configuration, executor, autoCommit);
     } catch (Exception e) {
       closeTransaction(tx); // may have fetched a connection so lets call close()
@@ -127,6 +140,7 @@ public class DefaultSqlSessionFactory implements SqlSessionFactory {
 
   private TransactionFactory getTransactionFactoryFromEnvironment(Environment environment) {
     if (environment == null || environment.getTransactionFactory() == null) {
+      // 如果Environment对象为空，则创建默认的 ManagedTransactionFactory 实例
       return new ManagedTransactionFactory();
     }
     return environment.getTransactionFactory();

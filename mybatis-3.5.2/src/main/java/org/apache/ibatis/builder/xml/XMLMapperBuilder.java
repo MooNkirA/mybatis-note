@@ -140,17 +140,19 @@ public class XMLMapperBuilder extends BaseBuilder {
       if (namespace == null || namespace.equals("")) {
         throw new BuilderException("Mapper's namespace cannot be empty");
       }
+      // 设置 MapperBuilderAssistant 实例的 currentNamespace 属性
       builderAssistant.setCurrentNamespace(namespace);
-      // 映射文件中其他配置节点的解析
+      // 解析cache-ref节点
       cacheRefElement(context.evalNode("cache-ref"));
+      // 解析cache节点。【重点分析】
       cacheElement(context.evalNode("cache"));
+      // 解析parameterMap节点（官网已废弃）
       parameterMapElement(context.evalNodes("/mapper/parameterMap"));
-      // 重点关注以下两个解析
-      // resultMap 标签的解析逻辑
+      // 解析resultMap节点（基于数据结果去理解）。【重点分析】
       resultMapElements(context.evalNodes("/mapper/resultMap"));
-      // sql 标签的解析逻辑
+      // 解析sql节点。【重点分析】
       sqlElement(context.evalNodes("/mapper/sql"));
-      // 处理各个数据库操作语句。重要程度【5】
+      // 解析select|insert|update|delete节点，即处理数据库各种操作语句。重要程度【5】
       buildStatementFromContext(context.evalNodes("select|insert|update|delete"));
     } catch (Exception e) {
       throw new BuilderException("Error parsing Mapper XML. The XML location is '" + resource + "'. Cause: " + e, e);

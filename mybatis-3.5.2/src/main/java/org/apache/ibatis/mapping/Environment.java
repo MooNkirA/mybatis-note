@@ -20,11 +20,8 @@ import javax.sql.DataSource;
 import org.apache.ibatis.transaction.TransactionFactory;
 
 /**
+ * 对应了配置文件中的 environments节点
  * @author Clinton Begin
- */
-
-/**
- * 对应了配置文件中的envir onments节点
  */
 public final class Environment {
   // 编号

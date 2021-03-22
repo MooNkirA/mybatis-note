@@ -23,6 +23,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.ibatis.session.SqlSession;
 
 /**
+ * MapperProxyFactory 是 MapperProxy 的生产工厂，newInstance核心方法会生成一个 MapperProxy 对象
+ *
  * @author Lasse Voss
  */
 public class MapperProxyFactory<T> {
@@ -30,6 +32,10 @@ public class MapperProxyFactory<T> {
   private final Class<T> mapperInterface;
   private final Map<Method, MapperMethod> methodCache = new ConcurrentHashMap<>();
 
+  /**
+   * MapperProxyFactory 构造方法
+   * @param mapperInterface 映射接口
+   */
   public MapperProxyFactory(Class<T> mapperInterface) {
     this.mapperInterface = mapperInterface;
   }
@@ -42,6 +48,7 @@ public class MapperProxyFactory<T> {
     return methodCache;
   }
 
+  // 生成一个 MapperProxy 对象，该类实现了InvocationHandler接口
   @SuppressWarnings("unchecked")
   protected T newInstance(MapperProxy<T> mapperProxy) {
     return (T) Proxy.newProxyInstance(mapperInterface.getClassLoader(), new Class[] { mapperInterface }, mapperProxy);

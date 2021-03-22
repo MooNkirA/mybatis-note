@@ -2,6 +2,7 @@ package com.moon.mybatis.test;
 
 import com.moon.mybatis.dao.CacheMapper;
 import com.moon.mybatis.dao.CommonMapper;
+import com.moon.mybatis.dao.ConsultConfigAreaMapper;
 import com.moon.mybatis.dao.UserMapper;
 import com.moon.mybatis.pojo.ConsultContract;
 import com.moon.mybatis.pojo.ConsultIdCardInfo;
@@ -43,6 +44,12 @@ public class MyBatisTest {
         }
     }
 
+    /* 单表查询返回多条数据，基础resultMap的使用测试 */
+    @Test
+    public void testBasicResultMap() {
+        CommonMapper mapper = this.getMapper(CommonMapper.class);
+        System.out.println(mapper.queryContracts());
+    }
 
     /* 多表联合查询，单条数据中包含单条关联表的数据，resultMap的association使用测试 */
     @Test
@@ -127,6 +134,17 @@ public class MyBatisTest {
     /*
      * todo: 动态sql示例待补充
      */
+    /* trim+if 动态标签测试 */
+    @Test
+    public void testTrimSql() {
+        ConsultConfigAreaMapper mapper = getMapper(ConsultConfigAreaMapper.class);
+        // 设置查询条件
+        HashMap<String, Object> map = new HashMap<>();
+        map.put("state", "1");
+        map.put("beginPage", 1);
+        map.put("pageSize", 10);
+        System.out.println(mapper.queryAreaByCondition(map));
+    }
 
     /* 批量处理新增数据测试 */
     @Test
@@ -171,35 +189,32 @@ public class MyBatisTest {
     /* 测试一级缓存：同一个SqlSession同一个命名空间中的同一个查询语句多次执行 */
     @Test
     public void testLevel1Cache() {
-        Map<String, Object> map = new HashMap<>();
-        CommonMapper mapper = getSqlSession().getMapper(CommonMapper.class);
+        ConsultConfigAreaMapper mapper = getSqlSession().getMapper(ConsultConfigAreaMapper.class);
         System.out.println("=========第一次查询==========");
-        System.out.println(mapper.queryAreaByAreaCode(map));
+        System.out.println(mapper.queryAreaByAreaCode());
         System.out.println("=========第二次查询==========");
-        System.out.println(mapper.queryAreaByAreaCode(map));
+        System.out.println(mapper.queryAreaByAreaCode());
     }
 
     /* 测试一级缓存：不同的SqlSession同一个命名空间中的同一个查询语句多次执行 */
     @Test
     public void testLevel1CacheDiffSqlSession() {
-        Map<String, Object> map = new HashMap<>();
         System.out.println("=========第一次查询==========");
-        System.out.println(getMapper(CommonMapper.class).queryAreaByAreaCode(map));
+        System.out.println(getMapper(ConsultConfigAreaMapper.class).queryAreaByAreaCode());
         System.out.println("=========第二次查询==========");
-        System.out.println(getMapper(CommonMapper.class).queryAreaByAreaCode(map));
+        System.out.println(getMapper(ConsultConfigAreaMapper.class).queryAreaByAreaCode());
     }
 
     /* 测试二级缓存：同一个sqlSessionFactory，不同SqlSession同一个命名空间中的同一个查询语句多次执行 */
     @Test
     public void testLevel2CacheSameSqlSessionFactory() {
-        Map<String, Object> map = new HashMap<>();
         // 开启一个SqlSession
         SqlSession sqlSession = sqlSessionFactory.openSession();
-        CommonMapper mapper = sqlSession.getMapper(CommonMapper.class);
+        ConsultConfigAreaMapper mapper = sqlSession.getMapper(ConsultConfigAreaMapper.class);
         System.out.println("=========第一次查询==========");
-        System.out.println(mapper.queryAreaByAreaCode(map));
+        System.out.println(mapper.queryAreaByAreaCode());
         System.out.println("=========第二次查询==========");
-        System.out.println(mapper.queryAreaByAreaCode(map));
+        System.out.println(mapper.queryAreaByAreaCode());
         // 注意：需要提交事务与关闭sqlSession，才会序列化结果到二级缓存
         sqlSession.commit();
         sqlSession.close();
@@ -207,7 +222,7 @@ public class MyBatisTest {
         // 在同一个 sqlSessionFactory 中开启新的 SqlSession
         SqlSession sqlSession1 = sqlSessionFactory.openSession();
         System.out.println("=========新的sqlSession查询第一次查询==========");
-        System.out.println(sqlSession1.getMapper(CommonMapper.class).queryAreaByAreaCode(map));
+        System.out.println(sqlSession1.getMapper(ConsultConfigAreaMapper.class).queryAreaByAreaCode());
         sqlSession1.commit();
         sqlSession1.close();
     }
@@ -215,13 +230,12 @@ public class MyBatisTest {
     /* 测试二级缓存：不同的sqlSessionFactory，不同SqlSession同一个命名空间中的同一个查询语句多次执行 */
     @Test
     public void testLevel2CacheDiffSqlSessionFactory() throws IOException {
-        Map<String, Object> map = new HashMap<>();
         SqlSession sqlSession = getSqlSession();
-        CommonMapper mapper = sqlSession.getMapper(CommonMapper.class);
+        ConsultConfigAreaMapper mapper = sqlSession.getMapper(ConsultConfigAreaMapper.class);
         System.out.println("=========第一次查询==========");
-        System.out.println(mapper.queryAreaByAreaCode(map));
+        System.out.println(mapper.queryAreaByAreaCode());
         System.out.println("=========第二次查询==========");
-        System.out.println(mapper.queryAreaByAreaCode(map));
+        System.out.println(mapper.queryAreaByAreaCode());
         // 注意：需要提交事务与关闭sqlSession，才会序列化结果到二级缓存
         sqlSession.commit();
         sqlSession.close();
@@ -229,7 +243,7 @@ public class MyBatisTest {
         // 获取新的sqlSessionFactory后，再开启一个SqlSession
         SqlSession sqlSession1 = getSqlSessionFactory().openSession();
         System.out.println("=========新的sqlSessionFactory开启的sqlSession查询第一次查询==========");
-        System.out.println(sqlSession1.getMapper(CommonMapper.class).queryAreaByAreaCode(map));
+        System.out.println(sqlSession1.getMapper(ConsultConfigAreaMapper.class).queryAreaByAreaCode());
         sqlSession1.commit();
         sqlSession1.close();
     }

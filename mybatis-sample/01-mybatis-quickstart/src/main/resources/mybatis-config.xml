@@ -19,6 +19,6 @@
     </environments>
     <!-- xml文件 -->
     <mappers>
-        <mapper resource="xml/CommomMapper.xml"/>
+        <mapper resource="xml/ConsultConfigAreaMapper.xml"/>
     </mappers>
 </configuration>

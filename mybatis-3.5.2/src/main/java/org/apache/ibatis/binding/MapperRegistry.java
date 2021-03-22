@@ -52,13 +52,13 @@ public class MapperRegistry {
    */
   @SuppressWarnings("unchecked")
   public <T> T getMapper(Class<T> type, SqlSession sqlSession) {
-    // 找出指定的接口的代理工厂
+    // 根据类型，获取指定的接口的代理工厂实例
     final MapperProxyFactory<T> mapperProxyFactory = (MapperProxyFactory<T>) knownMappers.get(type);
     if (mapperProxyFactory == null) {
       throw new BindingException("Type " + type + " is not known to the MapperRegistry.");
     }
     try {
-      // 通过 mapperProxyFactory 给出对应代理器的实例
+      // 通过 mapperProxyFactory 获取相应的代理实例
       return mapperProxyFactory.newInstance(sqlSession);
     } catch (Exception e) {
       throw new BindingException("Error getting mapper instance. Cause: " + e, e);

@@ -113,5 +113,7 @@
         <mapper resource="xml/CommomMapper.xml"/>
         <mapper resource="xml/UserMapper.xml"/>
         <mapper resource="xml/CacheMapper.xml"/>
+        <mapper resource="xml/ConsultConfigAreaMapper.xml"/>
+        <mapper resource="xml/ConsultRecordMapper.xml"/>
     </mappers>
 </configuration>
