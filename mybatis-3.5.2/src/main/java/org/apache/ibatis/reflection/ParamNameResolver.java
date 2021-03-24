@@ -28,6 +28,9 @@ import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
 
+/**
+ * 参数名解析器
+ */
 public class ParamNameResolver {
 
   private static final String GENERIC_NAME_PREFIX = "param";
@@ -78,15 +81,16 @@ public class ParamNameResolver {
       // 参数名称
       String name = null;
       for (Annotation annotation : paramAnnotations[paramIndex]) {
-        // 找出参数的注解
+        // 判断参数是否标识了@Param注解
         if (annotation instanceof Param) {
-          // 如果注解是 Param
+          // 如果是，则设置hasParamAnnotation属性为true
           hasParamAnnotation = true;
           // 那就以Param中的值作为参数名
           name = ((Param) annotation).value();
           break;
         }
       }
+      // 参数名称name变量为null，则代表方法的参数列表中，没有@Param注解
       if (name == null) {
         // 否则，保留参数的原名称
         // @Param was not specified.
@@ -96,11 +100,11 @@ public class ParamNameResolver {
         if (name == null) {
           // use the parameter index as the name ("0", "1", ...)
           // gcode issue #71
-          // 参数名称取不到，则按照参数的index命名
+          // 参数名称取不到，则按照参数的index来命名。（其实方法形参变量名不重要。）
           name = String.valueOf(map.size());
         }
       }
-      // 参数顺序->参数名称
+      // 建立映射关系，参数顺序->参数名称
       map.put(paramIndex, name);
     }
     names = Collections.unmodifiableSortedMap(map);
@@ -147,10 +151,11 @@ public class ParamNameResolver {
       // 如果只有一个参数，直接返回参数
       return args[names.firstKey()];
     } else {
+      // 多个参数
       final Map<String, Object> param = new ParamMap<>();
       int i = 0;
       for (Map.Entry<Integer, String> entry : names.entrySet()) {
-        // 首先按照类注释中提供的key,存入一遍   【参数的@Param名称 或者 参数排序：实参值】
+        // 首先按照类注释中提供的key,存入一遍  【参数的@Param名称 或者 参数排序：实参值】
         // 注意，key和value交换了位置
         param.put(entry.getValue(), args[entry.getKey()]);
 
@@ -159,6 +164,7 @@ public class ParamNameResolver {
         final String genericParamName = GENERIC_NAME_PREFIX + String.valueOf(i + 1);
         // ensure not to overwrite parameter named with @Param
         if (!names.containsValue(genericParamName)) {
+          // 存入map集合，key是：参数名（如：param1）；value是：参数的位置索引
           param.put(genericParamName, args[entry.getKey()]);
         }
         i++;

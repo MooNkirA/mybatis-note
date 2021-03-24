@@ -148,7 +148,7 @@ public class DefaultSqlSession implements SqlSession {
   /**
    * 查询结果列表
    * @param <E> 返回的列表元素的类型
-   * @param statement SQL语句
+   * @param statement SQL语句id (即解析xml映射配置时，namespace + sqlId)
    * @param parameter 参数对象
    * @param rowBounds  翻页限制条件
    * @return 结果对象列表

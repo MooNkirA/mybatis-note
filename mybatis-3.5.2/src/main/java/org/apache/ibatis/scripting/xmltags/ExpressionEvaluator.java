@@ -24,33 +24,58 @@ import java.util.Map;
 import org.apache.ibatis.builder.BuilderException;
 
 /**
+ * MyBatis并没有将 OGNL工具直接暴露给各个 SQL节点使用，而是对 OGNL工具进行了进一步的易用性封装，得到了 ExpressionEvaluator 类，即表达式求值器
  * @author Clinton Begin
  */
 public class ExpressionEvaluator {
 
+  /**
+   * 对结果为true、false形式的表达式求值
+   *
+   * 该方法能够对结果为 true、false形式的 表达式进行求值。例如，“<if test="name!=null">”节点中的 true、false判断便可以直接调用该方法完成
+   *
+   * @param expression 表达式
+   * @param parameterObject 参数对象
+   * @return 求值结果
+   */
   public boolean evaluateBoolean(String expression, Object parameterObject) {
+    // 获取表达式的值
     Object value = OgnlCache.getValue(expression, parameterObject);
+	  // 如果确实是Boolean形式的结果
     if (value instanceof Boolean) {
       return (Boolean) value;
     }
+	  // 如果是数值形式的结果
     if (value instanceof Number) {
       return new BigDecimal(String.valueOf(value)).compareTo(BigDecimal.ZERO) != 0;
     }
     return value != null;
   }
 
+  /**
+   * 对结果为迭代形式的表达式进行求值
+   *
+   * 该方法 能对结果为迭代形式的表达式进行求值。这样，“<foreach item="id" collection="array" open="(" separator="，"close=")">#{id} </foreach>”节点中的迭代判断便可以直接调用该方法完成。
+   * @param expression 表达式
+   * @param parameterObject 参数对象
+   * @return 求值结果
+   */
   public Iterable<?> evaluateIterable(String expression, Object parameterObject) {
+    // 获取表达式结果
     Object value = OgnlCache.getValue(expression, parameterObject);
     if (value == null) {
       throw new BuilderException("The expression '" + expression + "' evaluated to a null value.");
     }
+	  // 如果结果是Iterable
     if (value instanceof Iterable) {
       return (Iterable<?>) value;
     }
+	  // 如果结果是Array
     if (value.getClass().isArray()) {
       // the array may be primitive, so Arrays.asList() may throw
       // a ClassCastException (issue 209).  Do the work manually
       // Curse primitives! :) (JGB)
+      // 得到的Array可能是原始的，因此调用Arrays.asList可能会抛出ClassCastException。因此要手工转为ArrayList
       int size = Array.getLength(value);
       List<Object> answer = new ArrayList<>();
       for (int i = 0; i < size; i++) {
@@ -59,6 +84,7 @@ public class ExpressionEvaluator {
       }
       return answer;
     }
+	  // 如果结果是Map
     if (value instanceof Map) {
       return ((Map) value).entrySet();
     }

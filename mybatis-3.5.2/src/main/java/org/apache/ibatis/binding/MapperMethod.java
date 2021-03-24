@@ -167,11 +167,14 @@ public class MapperMethod {
 
   private <E> Object executeForMany(SqlSession sqlSession, Object[] args) {
     List<E> result;
+    // 获取执行方法的入参值
     Object param = method.convertArgsToSqlCommandParam(args);
+    // 判断是否有分页
     if (method.hasRowBounds()) {
       RowBounds rowBounds = method.extractRowBounds(args);
       result = sqlSession.selectList(command.getName(), param, rowBounds);
     } else {
+
       result = sqlSession.selectList(command.getName(), param);
     }
     // issue #510 Collections & arrays support

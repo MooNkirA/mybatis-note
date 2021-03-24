@@ -48,10 +48,10 @@ public class DynamicSqlSource implements SqlSource {
     DynamicContext context = new DynamicContext(configuration, parameterObject);
     // 这里会从根节点开始，对节点逐层调用apply方法，经过这一步后，动态节点"${}"都被替换，这样 DynamicSqlSource便不再是动态的，而是静态的。
     rootSqlNode.apply(context);
-    // 处理占位符，汇总参数信息
+    // 创建SqlSourceBuilder实例
     SqlSourceBuilder sqlSourceParser = new SqlSourceBuilder(configuration);
     Class<?> parameterType = parameterObject == null ? Object.class : parameterObject.getClass();
-    // 使用SqlSourceBuilder处理"#{}"，将其转化为"？"，最终生成了StaticSqlSource对象
+    // 处理占位符，汇总参数信息，使用SqlSourceBuilder处理"#{}"，将其转化为"？"，最终生成了StaticSqlSource对象
     SqlSource sqlSource = sqlSourceParser.parse(context.getSql(), parameterType, context.getBindings());
     BoundSql boundSql = sqlSource.getBoundSql(parameterObject);
     // 把context.getBindings()的参数放到boundSql的metaParameters中进行保存

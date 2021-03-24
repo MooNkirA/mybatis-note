@@ -31,14 +31,21 @@ import org.apache.ibatis.session.Configuration;
  * <p>
  * Can also have additional parameters that are created by the dynamic language (for loops, bind...).
  *
+ * BoundSql是 SQL语句中一个重要的中间产物，它既存储了转化结束 的 SQL信息，
+ * 又包含了实参信息和一些附加的环境信息。接下来，它会 在 SQL的执行中继续发挥作用。
  * @author Clinton Begin
  */
 public class BoundSql {
 
+  // 可能含有"?" 占位符的SQL语句
   private final String sql;
+  // 参数映射列表
   private final List<ParameterMapping> parameterMappings;
+  // 实参对象本身
   private final Object parameterObject;
+  // 实参
   private final Map<String, Object> additionalParameters;
+  // additionalParameters 的包装对象
   private final MetaObject metaParameters;
 
   public BoundSql(Configuration configuration, String sql, List<ParameterMapping> parameterMappings, Object parameterObject) {

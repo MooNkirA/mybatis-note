@@ -51,8 +51,10 @@ public class TrimSqlNode implements SqlNode {
 
   @Override
   public boolean apply(DynamicContext context) {
+    // 创建FilteredDynamicContext类（继承了DynamicContext类）来处理<trim>标签的拼接
     FilteredDynamicContext filteredDynamicContext = new FilteredDynamicContext(context);
     boolean result = contents.apply(filteredDynamicContext);
+    // 上面拼接的sql都存到FilteredDynamicContext类中，此方法将拼接的sql传到父类DynamicContext中
     filteredDynamicContext.applyAll();
     return result;
   }

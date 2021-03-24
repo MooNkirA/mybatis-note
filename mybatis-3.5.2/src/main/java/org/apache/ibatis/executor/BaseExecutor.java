@@ -55,7 +55,9 @@ public abstract class BaseExecutor implements Executor {
   protected Executor wrapper;
 
   protected ConcurrentLinkedQueue<DeferredLoad> deferredLoads;
+  // 查询操作的结果缓存
   protected PerpetualCache localCache;
+  // Callable查询的输出参数缓存
   protected PerpetualCache localOutputParameterCache;
   protected Configuration configuration;
 
@@ -65,6 +67,7 @@ public abstract class BaseExecutor implements Executor {
   protected BaseExecutor(Configuration configuration, Transaction transaction) {
     this.transaction = transaction;
     this.deferredLoads = new ConcurrentLinkedQueue<>();
+    // 这个就是用来存放一级缓存，所有创建sqlSession都会创建新的缓存实例，所以这就是一级缓存不能跨sqlSession
     this.localCache = new PerpetualCache("LocalCache");
     this.localOutputParameterCache = new PerpetualCache("LocalOutputParameterCache");
     this.closed = false;
@@ -107,13 +110,23 @@ public abstract class BaseExecutor implements Executor {
     return closed;
   }
 
+  /**
+   * 更新数据库数据，INSERT/UPDATE/DELETE三种操作都会调用该方法
+   * @param ms 映射语句
+   * @param parameter 参数对象
+   * @return 数据库操作结果
+   * @throws SQLException
+   */
   @Override
   public int update(MappedStatement ms, Object parameter) throws SQLException {
     ErrorContext.instance().resource(ms.getResource()).activity("executing an update").object(ms.getId());
     if (closed) {
+      // 执行器已经关闭
       throw new ExecutorException("Executor was closed.");
     }
+    // 清理本地缓存
     clearLocalCache();
+    // 返回调用子类进行操作
     return doUpdate(ms, parameter);
   }
 
@@ -129,41 +142,74 @@ public abstract class BaseExecutor implements Executor {
     return doFlushStatements(isRollBack);
   }
 
+  /**
+   * 执行查询操作
+   * @param ms 映射语句对象
+   * @param parameter 参数对象
+   * @param rowBounds 翻页限制
+   * @param resultHandler 结果处理器
+   * @param <E> 输出结果类型
+   * @return 查询结果
+   * @throws SQLException
+   */
   @Override
   public <E> List<E> query(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler) throws SQLException {
     BoundSql boundSql = ms.getBoundSql(parameter);
+    // 生成缓存键
     CacheKey key = createCacheKey(ms, parameter, rowBounds, boundSql);
+    // 查询数据
     return query(ms, parameter, rowBounds, resultHandler, key, boundSql);
   }
 
+
+  /**
+   * 查询数据库中的数据
+   * @param ms 映射语句
+   * @param parameter 参数对象
+   * @param rowBounds 翻页限制条件
+   * @param resultHandler 结果处理器
+   * @param key 缓存的键
+   * @param boundSql 查询语句
+   * @param <E> 结果类型
+   * @return 结果列表
+   * @throws SQLException
+   */
   @SuppressWarnings("unchecked")
   @Override
   public <E> List<E> query(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler, CacheKey key, BoundSql boundSql) throws SQLException {
     ErrorContext.instance().resource(ms.getResource()).activity("executing a query").object(ms.getId());
     if (closed) {
+      // 执行器已经关闭
       throw new ExecutorException("Executor was closed.");
     }
+	  // 新的查询栈且要求清除缓存
     if (queryStack == 0 && ms.isFlushCacheRequired()) {
+      // 新的查询栈，故清除本地缓存，即清除一级缓存
       clearLocalCache();
     }
     List<E> list;
     try {
       queryStack++;
+      // 尝试从本地缓存获取结果
       list = resultHandler == null ? (List<E>) localCache.getObject(key) : null;
       if (list != null) {
+        // 本地缓存中有结果，则对于CALLABLE语句还需要绑定到IN/INOUT参数上
         handleLocallyCachedOutputParameters(ms, key, parameter, boundSql);
       } else {
+        // 本地缓存没有结果，故需要查询数据库
         list = queryFromDatabase(ms, parameter, rowBounds, resultHandler, key, boundSql);
       }
     } finally {
       queryStack--;
     }
     if (queryStack == 0) {
+      // 懒加载操作的处理
       for (DeferredLoad deferredLoad : deferredLoads) {
         deferredLoad.load();
       }
       // issue #601
       deferredLoads.clear();
+      // 如果本地缓存的作用域为STATEMENT，则立刻清除本地缓存
       if (configuration.getLocalCacheScope() == LocalCacheScope.STATEMENT) {
         // issue #482
         clearLocalCache();
@@ -191,11 +237,20 @@ public abstract class BaseExecutor implements Executor {
     }
   }
 
+  /**
+   * 生成查询的缓存键，生成的 CacheKey 对象中包含了这次查询的所有信息，包括查询语句的 id、查询的翻页限制、数据总量、完整的 SQL语句，这些信息一致就保证了两次查询的一致。
+   * @param ms 映射语句对象
+   * @param parameterObject 参数对象
+   * @param rowBounds 翻页限制
+   * @param boundSql 解析结束后的SQL语句
+   * @return 生成的键值
+   */
   @Override
   public CacheKey createCacheKey(MappedStatement ms, Object parameterObject, RowBounds rowBounds, BoundSql boundSql) {
     if (closed) {
       throw new ExecutorException("Executor was closed.");
     }
+    // 创建CacheKey，并将所有查询参数依次更新写入
     CacheKey cacheKey = new CacheKey();
     cacheKey.update(ms.getId());
     cacheKey.update(rowBounds.getOffset());
@@ -317,14 +372,30 @@ public abstract class BaseExecutor implements Executor {
     }
   }
 
+  /**
+   * 从数据库中查询结果
+   * @param ms 映射语句
+   * @param parameter 参数对象
+   * @param rowBounds 翻页限制条件
+   * @param resultHandler 结果处理器
+   * @param key 缓存的键
+   * @param boundSql 查询语句
+   * @param <E> 结果类型
+   * @return 结果列表
+   * @throws SQLException
+   */
   private <E> List<E> queryFromDatabase(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler, CacheKey key, BoundSql boundSql) throws SQLException {
     List<E> list;
+    // 向缓存中增加占位符，表示正在查询
     localCache.putObject(key, EXECUTION_PLACEHOLDER);
     try {
+      // 真正的查询操作
       list = doQuery(ms, parameter, rowBounds, resultHandler, boundSql);
     } finally {
+      // 删除占位符
       localCache.removeObject(key);
     }
+    // 将查询结果写入缓存
     localCache.putObject(key, list);
     if (ms.getStatementType() == StatementType.CALLABLE) {
       localOutputParameterCache.putObject(key, parameter);
@@ -332,11 +403,20 @@ public abstract class BaseExecutor implements Executor {
     return list;
   }
 
+  /**
+   * 获取一个Connection对象
+   * @param statementLog 日志对象
+   * @return Connection 对象
+   * @throws SQLException
+   */
   protected Connection getConnection(Log statementLog) throws SQLException {
     Connection connection = transaction.getConnection();
+	  // 启用调试日志
     if (statementLog.isDebugEnabled()) {
+      // 生成Connection对象的具有日志记录功能的代理对象 ConnectionLogger对象
       return ConnectionLogger.newInstance(connection, statementLog, queryStack);
     } else {
+      // 返回原始的Connection对象
       return connection;
     }
   }

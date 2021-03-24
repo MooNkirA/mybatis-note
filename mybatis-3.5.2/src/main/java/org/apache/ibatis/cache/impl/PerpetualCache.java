@@ -26,8 +26,10 @@ import org.apache.ibatis.cache.CacheException;
  */
 public class PerpetualCache implements Cache {
 
+  // 缓存id，用来唯一标识一个缓存。一般使用映射文件的 namespace 值作为缓存的 id，这样就能保证不同的映射文件的缓存是不同的。
   private final String id;
 
+  // 用来存储要缓存的数据
   private Map<Object, Object> cache = new HashMap<>();
 
   public PerpetualCache(String id) {

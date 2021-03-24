@@ -29,20 +29,33 @@ import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.type.JdbcType;
 
 /**
+ * SqlSourceBuilder 类能够将 DynamicSqlSource 和 RawSqlSource 中的“#{}”符号替换掉，从而将它们转化为 StaticSqlSource
  * @author Clinton Begin
  */
 public class SqlSourceBuilder extends BaseBuilder {
 
+  // 能够处理的占位符属性
   private static final String PARAMETER_PROPERTIES = "javaType,jdbcType,mode,numericScale,resultMap,typeHandler,jdbcTypeName";
 
   public SqlSourceBuilder(Configuration configuration) {
     super(configuration);
   }
 
+  /**
+   * 将 DynamicSqlSource 和 RawSqlSource 中的 “#{}” 符号替换掉，从而将他们转化为 StaticSqlSource
+   * @param originalSql sqlNode.apply()拼接之后的sql语句。已经不包含<if> <where>等节点，也不含有${}符号
+   * @param parameterType 实参类型
+   * @param additionalParameters 附加参数
+   * @return 解析结束的StaticSqlSource
+   */
   public SqlSource parse(String originalSql, Class<?> parameterType, Map<String, Object> additionalParameters) {
+    // 用来完成#{}处理的处理器
     ParameterMappingTokenHandler handler = new ParameterMappingTokenHandler(configuration, parameterType, additionalParameters);
+    // 通用的占位符解析器，用来进行占位符替换
     GenericTokenParser parser = new GenericTokenParser("#{", "}", handler);
+    // 将#{}替换为?的SQL语句
     String sql = parser.parse(originalSql);
+    // 替换后，生成新的StaticSqlSource对象。此时已经占位符都已经被替换，是静态sql
     return new StaticSqlSource(configuration, sql, handler.getParameterMappings());
   }
 
