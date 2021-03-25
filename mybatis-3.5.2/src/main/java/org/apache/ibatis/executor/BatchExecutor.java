@@ -85,7 +85,9 @@ public class BatchExecutor extends BaseExecutor {
     try {
       flushStatements();
       Configuration configuration = ms.getConfiguration();
+      // 创建 StatementHandler 接口实例（实现类 RoutingStatementHandler）
       StatementHandler handler = configuration.newStatementHandler(wrapper, ms, parameterObject, rowBounds, resultHandler, boundSql);
+      // 获取连接对象（是jdk的动态代理）
       Connection connection = getConnection(ms.getStatementLog());
       stmt = handler.prepare(connection, transaction.getTimeout());
       handler.parameterize(stmt);

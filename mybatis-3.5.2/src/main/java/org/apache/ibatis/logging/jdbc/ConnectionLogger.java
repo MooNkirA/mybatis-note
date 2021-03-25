@@ -27,6 +27,7 @@ import org.apache.ibatis.reflection.ExceptionUtil;
 
 /**
  * Connection proxy to add logging.
+ * 为“java.sql.Connection”类提供日志打印能力，继承了InvocationHandler接口，从而成为一个代理类
  *
  * @author Clinton Begin
  * @author Eduardo Macarron
@@ -41,32 +42,53 @@ public final class ConnectionLogger extends BaseJdbcLogger implements Invocation
     this.connection = conn;
   }
 
+  /**
+   * 代理方法
+   * @param proxy 代理对象
+   * @param method 被代理方法
+   * @param params 被代理方法参数
+   * @return 方法执行结果
+   * @throws Throwable
+   */
   @Override
   public Object invoke(Object proxy, Method method, Object[] params)
       throws Throwable {
     try {
+      // 获得方法来源，如果方法来源继承自Object类，则直接交由目标对象执行
       if (Object.class.equals(method.getDeclaringClass())) {
         return method.invoke(this, params);
       }
       if ("prepareStatement".equals(method.getName())) {
+        // Connection中的prepareStatement
+        // 启用Debug
         if (isDebugEnabled()) {
+          // 输出方法中的参数信息
           debug(" Preparing: " + removeBreakingWhitespace((String) params[0]), true);
         }
+        // 交由目标对象执行
         PreparedStatement stmt = (PreparedStatement) method.invoke(connection, params);
+        // 返回一个 prepareStatement 的代理，该代理中加入了对 prepareStatement 的日志打印操作
         stmt = PreparedStatementLogger.newInstance(stmt, statementLog, queryStack);
         return stmt;
       } else if ("prepareCall".equals(method.getName())) {
+        // Connection中的 prepareCall 方法
+        // 启用Debug
         if (isDebugEnabled()) {
           debug(" Preparing: " + removeBreakingWhitespace((String) params[0]), true);
         }
+        // 交由目标对象执行
         PreparedStatement stmt = (PreparedStatement) method.invoke(connection, params);
+        // 返回一个 prepareStatement 的代理，该大力中加入了对 prepareStatement 的日志打印操作
         stmt = PreparedStatementLogger.newInstance(stmt, statementLog, queryStack);
         return stmt;
       } else if ("createStatement".equals(method.getName())) {
+        // Connection 中的 createStatement 方法。交由目标对象执行
         Statement stmt = (Statement) method.invoke(connection, params);
+        // 返回一个Statement的代理，该代理中加入了对Statement的日志打印操作
         stmt = StatementLogger.newInstance(stmt, statementLog, queryStack);
         return stmt;
       } else {
+        // 其他方法
         return method.invoke(connection, params);
       }
     } catch (Throwable t) {
@@ -76,6 +98,7 @@ public final class ConnectionLogger extends BaseJdbcLogger implements Invocation
 
   /**
    * Creates a logging version of a connection.
+   * 创建带日志记录的连接
    *
    * @param conn - the original connection
    * @return - the connection with logging
@@ -83,6 +106,7 @@ public final class ConnectionLogger extends BaseJdbcLogger implements Invocation
   public static Connection newInstance(Connection conn, Log statementLog, int queryStack) {
     InvocationHandler handler = new ConnectionLogger(conn, statementLog, queryStack);
     ClassLoader cl = Connection.class.getClassLoader();
+    // 创建连接代理
     return (Connection) Proxy.newProxyInstance(cl, new Class[]{Connection.class}, handler);
   }
 
