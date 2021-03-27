@@ -44,9 +44,20 @@ public class SqlSessionFactoryBuilder {
     return build(reader, null, properties);
   }
 
+  /**
+   * 建造一个SqlSessionFactory对象
+   * @param reader 读取字符流的抽象类，将配置文件转成流的形式
+   * @param environment 环境信息
+   * @param properties 配置信息
+   * @return SqlSessionFactory对象
+   */
   public SqlSessionFactory build(Reader reader, String environment, Properties properties) {
     try {
+      // 传入配置文件流对象，创建一个XMLConfigBuilder类
       XMLConfigBuilder parser = new XMLConfigBuilder(reader, environment, properties);
+      // 分两步：
+      // 1、通过XMLConfigBuilder对象解析配置文件，得到配置文件对应的Configuration对象
+      // 2、根据Configuration对象，获得一个DefaultSqlSessionFactory实例，并返回
       return build(parser.parse());
     } catch (Exception e) {
       throw ExceptionFactory.wrapException("Error building SqlSession.", e);
@@ -72,9 +83,13 @@ public class SqlSessionFactoryBuilder {
     return build(inputStream, null, properties);
   }
 
+  /* 创建SqlSessionFactory核心方法 */
   public SqlSessionFactory build(InputStream inputStream, String environment, Properties properties) {
     try {
+      // 创建XMLConfigBuilder实例，主要是完成将xml配置文件流封装成Document对象，还有重点是创建了Configuration实例
       XMLConfigBuilder parser = new XMLConfigBuilder(inputStream, environment, properties);
+      // 解析xml配置文件，将解析的信息都放入Configuration实例中
+      // build 方法，创建DefaultSqlSessionFactory实例，该实例中持有Configuration实例
       return build(parser.parse());
     } catch (Exception e) {
       throw ExceptionFactory.wrapException("Error building SqlSession.", e);
@@ -88,6 +103,11 @@ public class SqlSessionFactoryBuilder {
     }
   }
 
+  /**
+   * 根据配置信息建造一个SqlSessionFactory对象
+   * @param config 配置信息
+   * @return SqlSessionFactory对象
+   */
   public SqlSessionFactory build(Configuration config) {
     return new DefaultSqlSessionFactory(config);
   }

@@ -34,6 +34,7 @@ import org.apache.ibatis.session.RowBounds;
 import org.apache.ibatis.type.TypeHandlerRegistry;
 
 /**
+ * 三个实现类的父类，提供了实现类的公共方法，在 prepare方法中定义了整个方法的框架，然后将一些与子类相关的操作交给其三个子类处理。
  * @author Clinton Begin
  */
 public abstract class BaseStatementHandler implements StatementHandler {

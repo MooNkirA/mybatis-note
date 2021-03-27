@@ -98,10 +98,20 @@ import org.apache.ibatis.type.TypeHandlerRegistry;
 /**
  * @author Clinton Begin
  */
+
+/**
+ * 我们知道配置文件 mybatis-config.xml是 MyBatis配置的主入 口，包括映射文件的路径也是通过它指明的。而配置文件的根节点就是 configuration 节点，因此该节点内保存了所有的配置信息。
+ * configuration节点的信息经过解析后都存入了 Configuration对 象中，因此 Configuration对象中就包含了 MyBatis运行的所有配置信 息。
+ * 并且 Configuration类还对配置信息进行了进一步的加工，为许多 配置项设置了默认值，为许多实体定义了别名等。因而Configuration 类是MyBatis中极为重要的一个类
+ *
+ *  MyBatis中的 BaseBuilder、BaseExecutor、Configuration、ResultMap等近 20个类都在属性中引用了 Configuration对象，这使得 Configuration对象成了 MyBatis全局共享的配置信息中心，能为其他对象 提供配置信息的查询和更新服务。
+ */
 public class Configuration {
 
+  // <environment>节点的信息
   protected Environment environment;
 
+  // 以下为<settings>节点中的配置信息
   protected boolean safeRowBoundsEnabled;
   protected boolean safeResultHandlerEnabled = true;
   protected boolean mapUnderscoreToCamelCase;
@@ -126,15 +136,23 @@ public class Configuration {
   protected ExecutorType defaultExecutorType = ExecutorType.SIMPLE;
   protected AutoMappingBehavior autoMappingBehavior = AutoMappingBehavior.PARTIAL;
   protected AutoMappingUnknownColumnBehavior autoMappingUnknownColumnBehavior = AutoMappingUnknownColumnBehavior.NONE;
+  // 以上为<settings>节点中的配置信息
 
+  // <properties>节点信息
   protected Properties variables = new Properties();
+  // 反射工厂
   protected ReflectorFactory reflectorFactory = new DefaultReflectorFactory();
+  // 对象工厂
   protected ObjectFactory objectFactory = new DefaultObjectFactory();
+  // 对象包装工厂
   protected ObjectWrapperFactory objectWrapperFactory = new DefaultObjectWrapperFactory();
 
+  // 是否启用懒加载，该配置来自<settings>节点
   protected boolean lazyLoadingEnabled = false;
+  // 代理工厂
   protected ProxyFactory proxyFactory = new JavassistProxyFactory(); // #224 Using internal Javassist instead of OGNL
 
+  // 数据库编号
   protected String databaseId;
   /**
    * Configuration factory class.
@@ -142,25 +160,39 @@ public class Configuration {
    *
    * @see <a href='https://code.google.com/p/mybatis/issues/detail?id=300'>Issue 300 (google code)</a>
    */
+  // 配置工厂，用来创建用于加载反序列化的未读属性的配置。
   protected Class<?> configurationFactory;
 
+  // 映射注册表
   protected final MapperRegistry mapperRegistry = new MapperRegistry(this);
+  // 拦截器链（用来支持插件的插入）
   protected final InterceptorChain interceptorChain = new InterceptorChain();
+  // 类型处理器注册表，内置许多，可以通过<typeHandlers>节点补充
   protected final TypeHandlerRegistry typeHandlerRegistry = new TypeHandlerRegistry();
+  // 类型别名注册表，内置许多，可以通过<typeAliases>节点补充
   protected final TypeAliasRegistry typeAliasRegistry = new TypeAliasRegistry();
+  // 语言驱动注册表
   protected final LanguageDriverRegistry languageRegistry = new LanguageDriverRegistry();
 
+  // 映射的数据库操作语句
   protected final Map<String, MappedStatement> mappedStatements = new StrictMap<MappedStatement>("Mapped Statements collection")
       .conflictMessageProducer((savedValue, targetValue) ->
           ". please check " + savedValue.getResource() + " and " + targetValue.getResource());
+  // 缓存
   protected final Map<String, Cache> caches = new StrictMap<>("Caches collection");
+  // 结果映射，即所有的<resultMap>节点
   protected final Map<String, ResultMap> resultMaps = new StrictMap<>("Result Maps collection");
+  // 参数映射，即所有的<parameterMap>节点
   protected final Map<String, ParameterMap> parameterMaps = new StrictMap<>("Parameter Maps collection");
+  // 主键生成器映射
   protected final Map<String, KeyGenerator> keyGenerators = new StrictMap<>("Key Generators collection");
 
+  // 载入的资源，例如映射文件资源
   protected final Set<String> loadedResources = new HashSet<>();
+  // SQL语句片段，即所有的<sql>节点
   protected final Map<String, XNode> sqlFragments = new StrictMap<>("XML fragments parsed from previous mappers");
 
+  // 暂存未处理完成的一些节点
   protected final Collection<XMLStatementBuilder> incompleteStatements = new LinkedList<>();
   protected final Collection<CacheRefResolver> incompleteCacheRefs = new LinkedList<>();
   protected final Collection<ResultMapResolver> incompleteResultMaps = new LinkedList<>();
@@ -171,6 +203,7 @@ public class Configuration {
    * references a cache bound to another namespace and the value is the
    * namespace which the actual cache is bound to.
    */
+  // 用来存储跨namespace的缓存共享设置
   protected final Map<String, String> cacheRefMap = new HashMap<>();
 
   public Configuration(Environment environment) {
@@ -543,6 +576,7 @@ public class Configuration {
 
   public void setDefaultScriptingLanguage(Class<? extends LanguageDriver> driver) {
     if (driver == null) {
+      // 默认语言驱动类是 XMLLanguageDriver 类
       driver = XMLLanguageDriver.class;
     }
     getLanguageRegistry().setDefaultDriverClass(driver);
@@ -575,9 +609,21 @@ public class Configuration {
     return MetaObject.forObject(object, objectFactory, objectWrapperFactory, reflectorFactory);
   }
 
+  // MyBatis 中一共只有四个类的对象可以被拦截器替 换，它们分别是ParameterHandler、ResultSetHandler、StatementHan dler 和 Executor。而且替换只能发生在固定的地方，我们称其为拦截点
+
+  /**
+   * 创建参数处理器
+   * @param mappedStatement 数据库操作的信息
+   * @param parameterObject 参数对象
+   * @param boundSql SQL 语句信息
+   * @return 参数处理器
+   */
   public ParameterHandler newParameterHandler(MappedStatement mappedStatement, Object parameterObject, BoundSql boundSql) {
+    // 创建参数处理器
     ParameterHandler parameterHandler = mappedStatement.getLang().createParameterHandler(mappedStatement, parameterObject, boundSql);
+    // 将参数处理器交给拦截器链进行替换，一遍拦截链中的烂机器能注入行为
     parameterHandler = (ParameterHandler) interceptorChain.pluginAll(parameterHandler);
+    // 返回最终的参数处理器
     return parameterHandler;
   }
 
@@ -598,10 +644,17 @@ public class Configuration {
     return newExecutor(transaction, defaultExecutorType);
   }
 
+  /**
+   * 创建一个执行器
+   * @param transaction 事务
+   * @param executorType 数据库操作类型
+   * @return 执行器
+   */
   public Executor newExecutor(Transaction transaction, ExecutorType executorType) {
     executorType = executorType == null ? defaultExecutorType : executorType;
     executorType = executorType == null ? ExecutorType.SIMPLE : executorType;
     Executor executor;
+    // 根据数据库操作类型创建市级执行器
     if (ExecutorType.BATCH == executorType) {
       executor = new BatchExecutor(this, transaction);
     } else if (ExecutorType.REUSE == executorType) {
@@ -609,9 +662,12 @@ public class Configuration {
     } else {
       executor = new SimpleExecutor(this, transaction);
     }
-    if (cacheEnabled) {
+    // 根据配置文件中的 settings 节点cacheEnabled配置项确定是否启用缓存
+    if (cacheEnabled) { // 如果配置启用该缓存
+      // 使用CachingExecutor装饰实际的执行器
       executor = new CachingExecutor(executor);
     }
+    // 为执行器增加拦截器（插件），以启用各个拦截器的功能【重点】
     executor = (Executor) interceptorChain.pluginAll(executor);
     return executor;
   }
@@ -657,6 +713,7 @@ public class Configuration {
   }
 
   public void addResultMap(ResultMap rm) {
+    // 建立 id 与 ResultMap 的映射关系
     resultMaps.put(rm.getId(), rm);
     checkLocallyForDiscriminatedNestedResultMaps(rm);
     checkGloballyForDiscriminatedNestedResultMaps(rm);
@@ -772,6 +829,7 @@ public class Configuration {
   }
 
   public <T> void addMapper(Class<T> type) {
+    // 注册Mapper映射
     mapperRegistry.addMapper(type);
   }
 
@@ -939,21 +997,32 @@ public class Configuration {
       return this;
     }
 
+    /**
+     * 向Map中写入键值对，自动尝试使用短名称再次存入给定数据
+     * @param key 键
+     * @param value 值
+     * @return 旧值，如果不存在旧值则为null。因为StrictMap不允许覆盖，则只能返回null
+     */
     @Override
     @SuppressWarnings("unchecked")
     public V put(String key, V value) {
       if (containsKey(key)) {
+        // 如果已经存在此key了，直接报错
         throw new IllegalArgumentException(name + " already contains value for " + key
             + (conflictMessageProducer == null ? "" : conflictMessageProducer.apply(super.get(key), value)));
       }
       if (key.contains(".")) {
+        // 例如key=“com.github.yeecode.clazzName”，则shortName = “clazzName”，即获取一个短名称
         final String shortKey = getShortName(key);
         if (super.get(shortKey) == null) {
+          // 以短名称为键，放置一次
           super.put(shortKey, value);
         } else {
+          // 放入该对象，表示短名称会引发歧义
           super.put(shortKey, (V) new Ambiguity(shortKey));
         }
       }
+      // 以长名称为键，放置一次
       return super.put(key, value);
     }
 

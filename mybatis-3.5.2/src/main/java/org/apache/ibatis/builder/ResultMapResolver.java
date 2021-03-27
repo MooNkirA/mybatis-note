@@ -25,6 +25,7 @@ import org.apache.ibatis.mapping.ResultMapping;
  * @author Eduardo Macarron
  */
 public class ResultMapResolver {
+  // 映射文件解析助手，主要用将解析的数据保存到Configuration类中
   private final MapperBuilderAssistant assistant;
   private final String id;
   private final Class<?> type;

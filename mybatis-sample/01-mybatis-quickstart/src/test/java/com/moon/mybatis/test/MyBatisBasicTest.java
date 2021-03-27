@@ -1,11 +1,11 @@
 package com.moon.mybatis.test;
 
 import com.moon.mybatis.dao.CommonMapper;
+import com.moon.mybatis.dao.ConsultConfigAreaMapper;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.session.SqlSessionFactoryBuilder;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -22,33 +22,52 @@ import java.util.HashMap;
  */
 public class MyBatisBasicTest {
 
-    private InputStream inputStream = null;
+    private final String RESOURCE = "mybatis-config.xml";
 
-    @Before
-    public void init() {
+    @Test
+    public void testMyBatisSelectList() {
         try {
+            // ----------------------------------------- 第一阶段 -----------------------------------------
             // 从 XML 文件中构建 SqlSessionFactory 的实例非常简单，建议使用类路径下的资源文件进行配置。
-            String resource = "mybatis-config.xml";
             // MyBatis 包含一个名叫 Resources 的工具类，它包含一些实用方法，可以使类路径或其它位置加载资源文件
-            inputStream = Resources.getResourceAsStream(resource);
+            InputStream inputStream = Resources.getResourceAsStream(RESOURCE);
+            // 读取配置文件，创建SqlSessionFactory
+            SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(inputStream);
+
+            // ----------------------------------------- 第二阶段 -----------------------------------------
+            // 通过SqlSessionFactory开启一个SqlSession
+            SqlSession sqlSession = sqlSessionFactory.openSession();
+
+            // ----------------------------------------- 第三阶段 -----------------------------------------
+            // 通过SqlSession调用相应的数据库操作方法
+            System.out.println(sqlSession.selectList("com.moon.mybatis.dao.ConsultConfigAreaMapper.queryAreaByAreaCode", null));
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
     @Test
-    public void testMyBatisSelectList() {
-        SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(inputStream);
-        SqlSession sqlSession = sqlSessionFactory.openSession();
-        System.out.println(sqlSession.selectList("com.moon.mybatis.dao.CommonMapper.queryAreaByAreaCode", new HashMap<>()));
-    }
-
-    @Test
     public void testMyBatisGetMapper() {
-        SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(inputStream);
-        SqlSession sqlSession = sqlSessionFactory.openSession();
-        CommonMapper mapper = sqlSession.getMapper(CommonMapper.class);
-        System.out.println(mapper.queryAreaByAreaCode(new HashMap<>()));
+        try {
+            // ----------------------------------------- 第一阶段 -----------------------------------------
+            // 从 XML 文件中构建 SqlSessionFactory 的实例非常简单，建议使用类路径下的资源文件进行配置。
+            // MyBatis 包含一个名叫 Resources 的工具类，它包含一些实用方法，可以使类路径或其它位置加载资源文件
+            InputStream inputStream = Resources.getResourceAsStream(RESOURCE);
+            // 读取配置文件，创建SqlSessionFactory
+            SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(inputStream);
+
+            // ----------------------------------------- 第二阶段 -----------------------------------------
+            // 通过SqlSessionFactory开启一个SqlSession
+            SqlSession sqlSession = sqlSessionFactory.openSession();
+            // 通过SqlSession获取指定的mapper映射器（其实是Mapper接口的代理）
+            ConsultConfigAreaMapper mapper = sqlSession.getMapper(ConsultConfigAreaMapper.class);
+
+            // ----------------------------------------- 第三阶段 -----------------------------------------
+            // 通过代理实例调用相应Mapper接口中的方法
+            System.out.println(mapper.queryAreaByAreaCode());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 }

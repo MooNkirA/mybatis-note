@@ -36,28 +36,41 @@ public abstract class VFS {
   private static final Log log = LogFactory.getLog(VFS.class);
 
   /** The built-in implementations. */
+  // 存储内置的VFS实现类
   public static final Class<?>[] IMPLEMENTATIONS = { JBoss6VFS.class, DefaultVFS.class };
 
   /** The list to which implementations are added by {@link #addImplClass(Class)}. */
+  // 存储用户自定义的VFS实现类
   public static final List<Class<? extends VFS>> USER_IMPLEMENTATIONS = new ArrayList<>();
 
   /** Singleton instance holder. */
+  /* 静态内部类，通过此内部类返回外部类的单例实例 */
   private static class VFSHolder {
+    // 最终指定的实现类
     static final VFS INSTANCE = createVFS();
 
+    /**
+     * 给出一个VFS实现类，单例模式
+     * @return VFS 实现类
+     */
     @SuppressWarnings("unchecked")
     static VFS createVFS() {
+      // 所有的VFS实现类的列表
       // Try the user implementations first, then the built-ins
       List<Class<? extends VFS>> impls = new ArrayList<>();
+      // 列表中先加入用户自定义的实现类，因此，用户自定义的实现类优先级高
       impls.addAll(USER_IMPLEMENTATIONS);
       impls.addAll(Arrays.asList((Class<? extends VFS>[]) IMPLEMENTATIONS));
 
       // Try each implementation class until a valid one is found
       VFS vfs = null;
+      // 依次生成实例，找出第一个可用的
       for (int i = 0; vfs == null || !vfs.isValid(); i++) {
         Class<? extends VFS> impl = impls.get(i);
         try {
+          // 生成一个实现类的对象
           vfs = impl.newInstance();
+          // 判断对象是否生成成功并可用
           if (vfs == null || !vfs.isValid()) {
             if (log.isDebugEnabled()) {
               log.debug("VFS implementation " + impl.getName() +
@@ -82,6 +95,7 @@ public abstract class VFS {
    * Get the singleton {@link VFS} instance. If no {@link VFS} implementation can be found for the
    * current environment, then this method returns null.
    */
+  // 获取单例的VFS
   public static VFS getInstance() {
     return VFSHolder.INSTANCE;
   }
@@ -92,6 +106,7 @@ public abstract class VFS {
    *
    * @param clazz The {@link VFS} implementation class to add.
    */
+  // 增加用户自定义的VFS实现
   public static void addImplClass(Class<? extends VFS> clazz) {
     if (clazz != null) {
       USER_IMPLEMENTATIONS.add(clazz);
@@ -196,7 +211,9 @@ public abstract class VFS {
    */
   public List<String> list(String path) throws IOException {
     List<String> names = new ArrayList<>();
+    // 通过包路径，获取URL对象
     for (URL url : getResources(path)) {
+      // 调用默认实现类DefaultVFS的list方法，获取符合条件的资源名称（类名）
       names.addAll(list(url, path));
     }
     return names;

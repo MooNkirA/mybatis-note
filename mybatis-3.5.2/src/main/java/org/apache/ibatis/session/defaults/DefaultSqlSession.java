@@ -47,11 +47,16 @@ import org.apache.ibatis.session.SqlSession;
  */
 public class DefaultSqlSession implements SqlSession {
 
+  // 配置信息
   private final Configuration configuration;
+  // 执行器
   private final Executor executor;
 
+  // 是否自动提交
   private final boolean autoCommit;
+  // 缓存是否已经被污染
   private boolean dirty;
+  // 游标列表
   private List<Cursor<?>> cursorList;
 
   public DefaultSqlSession(Configuration configuration, Executor executor, boolean autoCommit) {
@@ -140,10 +145,20 @@ public class DefaultSqlSession implements SqlSession {
     return this.selectList(statement, parameter, RowBounds.DEFAULT);
   }
 
+  /**
+   * 查询结果列表
+   * @param <E> 返回的列表元素的类型
+   * @param statement SQL语句id (即解析xml映射配置时，namespace + sqlId)
+   * @param parameter 参数对象
+   * @param rowBounds  翻页限制条件
+   * @return 结果对象列表
+   */
   @Override
   public <E> List<E> selectList(String statement, Object parameter, RowBounds rowBounds) {
     try {
+      // 获取查询语句
       MappedStatement ms = configuration.getMappedStatement(statement);
+      // 交由执行器进行查询
       return executor.query(ms, wrapCollection(parameter), rowBounds, Executor.NO_RESULT_HANDLER);
     } catch (Exception e) {
       throw ExceptionFactory.wrapException("Error querying database.  Cause: " + e, e);

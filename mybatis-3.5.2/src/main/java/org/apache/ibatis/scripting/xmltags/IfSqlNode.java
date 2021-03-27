@@ -16,11 +16,15 @@
 package org.apache.ibatis.scripting.xmltags;
 
 /**
+ * IfSqlNode对应着数据库操作节点中的 if节点。通过 if节点可以让 MyBatis 根据参数等信息决定是否写入一段 SQL片段。
  * @author Clinton Begin
  */
 public class IfSqlNode implements SqlNode {
+  // 表达式求值器
   private final ExpressionEvaluator evaluator;
+  // if判断时的测试条件
   private final String test;
+  // 如果if成立，要被拼接的SQL片段信息
   private final SqlNode contents;
 
   public IfSqlNode(SqlNode contents, String test) {
@@ -29,9 +33,29 @@ public class IfSqlNode implements SqlNode {
     this.evaluator = new ExpressionEvaluator();
   }
 
+  /**
+   * 完成该节点自身的解析
+   *
+   *     <select id="selectUsersByNameOrSchoolName" parameterMap="userParam01" resultType="User">
+   *         SELECT * FROM `user`
+   *         <where>
+   *             <if test="name != null">
+   *                 `name` = #{name}
+   *             </if>
+   *             <if test="schoolName != null">
+   *                 AND `schoolName` = #{schoolName}
+   *             </if>
+   *         </where>
+   *     </select>
+   *
+   * @param context 上下文环境，该节点自身的解析结果将合并到该上下文环境中
+   * @return 解析是否成功
+   */
   @Override
-  public boolean apply(DynamicContext context) {
+  public boolean apply (DynamicContext context) {
+    // 判断if条件是否成立，（ognl表达式，非重点）
     if (evaluator.evaluateBoolean(test, context.getBindings())) {
+      // 将contents拼接到context
       contents.apply(context);
       return true;
     }

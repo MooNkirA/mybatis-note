@@ -26,6 +26,7 @@ import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.session.ResultHandler;
 
 /**
+ * StatementHandler 是语句处理功能类的父接口。
  * @author Clinton Begin
  */
 public interface StatementHandler {

@@ -26,6 +26,9 @@ import org.apache.ibatis.reflection.ExceptionUtil;
 import org.apache.ibatis.session.SqlSession;
 
 /**
+ * MapperProxy基于动态代理将针对映射接口的方法调用转接成了对MapperMethod对象 execute方法的调用，
+ * 即只要用对应的 MapperProxy对象作为映射接口的 实现，便可以完整地实现为映射接口接入数据库操作的功能
+ *
  * @author Clinton Begin
  * @author Eduardo Macarron
  */
@@ -34,6 +37,8 @@ public class MapperProxy<T> implements InvocationHandler, Serializable {
   private static final long serialVersionUID = -6424540398559729838L;
   private final SqlSession sqlSession;
   private final Class<T> mapperInterface;
+  // methodCache 属性维护接口方法和 MapperMethod 对象的对应关系
+  // 该Map的键为方法，值为MapperMethod对象，通过该属性，完成MapperProxy内（即映射接口内）方法和MapperMethod的绑定
   private final Map<Method, MapperMethod> methodCache;
 
   public MapperProxy(SqlSession sqlSession, Class<T> mapperInterface, Map<Method, MapperMethod> methodCache) {
@@ -42,22 +47,35 @@ public class MapperProxy<T> implements InvocationHandler, Serializable {
     this.methodCache = methodCache;
   }
 
+  /**
+   * 代理方法
+   * @param proxy 代理对象
+   * @param method 代理方法
+   * @param args 代理方法的参数
+   * @return 方法执行结果
+   * @throws Throwable
+   */
   @Override
   public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
     try {
       if (Object.class.equals(method.getDeclaringClass())) {
+        // 继承自Object的方法，直接执行原有方法
         return method.invoke(this, args);
       } else if (method.isDefault()) {
+        // 执行默认方法
         return invokeDefaultMethod(proxy, method, args);
       }
     } catch (Throwable t) {
       throw ExceptionUtil.unwrapThrowable(t);
     }
+    // 找对应的 MapperMethod 对象
     final MapperMethod mapperMethod = cachedMapperMethod(method);
+    // 调用 MapperMethod 中的execute方法
     return mapperMethod.execute(sqlSession, args);
   }
 
   private MapperMethod cachedMapperMethod(Method method) {
+    // 从方法缓存 Map<Method, MapperMethod> methodCache 中获取相应MapperMethod实例，如果缓存中没有，则直接new出新的实现
     return methodCache.computeIfAbsent(method, k -> new MapperMethod(mapperInterface, method, sqlSession.getConfiguration()));
   }
 

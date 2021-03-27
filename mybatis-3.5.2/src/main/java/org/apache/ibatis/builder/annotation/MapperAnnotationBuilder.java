@@ -123,35 +123,50 @@ public class MapperAnnotationBuilder {
     this.type = type;
   }
 
+  /**
+   * 解析包含注解的接口文档
+   */
   public void parse() {
     String resource = type.toString();
+    // 防止重复解析
     if (!configuration.isResourceLoaded(resource)) {
+      // 寻找类名称对应的 resource路径下是否有 xml 配置，如果有则直接解析掉，这样就支持注解和xml一起混合使用了
       loadXmlResource();
+      // 记录资源路径
       configuration.addLoadedResource(resource);
+      // 设置命名空间
       assistant.setCurrentNamespace(type.getName());
+      // 处理缓存
       parseCache();
       parseCacheRef();
+      // 获取接口的所有方法
       Method[] methods = type.getMethods();
       for (Method method : methods) {
         try {
           // issue #237
+          // 排除桥接方法，桥接方法是为了匹配泛型的类型擦除而由编译器自动引入的，并非用户编写的方法，因此要排除掉。
           if (!method.isBridge()) {
+            // 解析该方法
             parseStatement(method);
           }
         } catch (IncompleteElementException e) {
+          // 异常方法暂存起来
           configuration.addIncompleteMethod(new MethodResolver(this, method));
         }
       }
     }
+    // 处理异常的方法
     parsePendingMethods();
   }
 
   private void parsePendingMethods() {
+    // 获取之前暂存起来解析异常的方法
     Collection<MethodResolver> incompleteMethods = configuration.getIncompleteMethods();
     synchronized (incompleteMethods) {
       Iterator<MethodResolver> iter = incompleteMethods.iterator();
       while (iter.hasNext()) {
         try {
+          // 再次解析
           iter.next().resolve();
           iter.remove();
         } catch (IncompleteElementException e) {
@@ -165,7 +180,9 @@ public class MapperAnnotationBuilder {
     // Spring may not know the real resource name so we check a flag
     // to prevent loading again a resource twice
     // this flag is set at XMLMapperBuilder#bindMapperForNamespace
+    // 判断是否解析过
     if (!configuration.isResourceLoaded("namespace:" + type.getName())) {
+      // 以下逻辑跟xml的解析流程一样
       String xmlResource = type.getName().replace('.', '/') + ".xml";
       // #1347
       InputStream inputStream = type.getResourceAsStream("/" + xmlResource);
@@ -296,11 +313,19 @@ public class MapperAnnotationBuilder {
     return null;
   }
 
+  /**
+   * 解析该方法，主要是解析方法上的注解信息
+   * @param method mapper接口的方法
+   */
   void parseStatement(Method method) {
+    // 通过该方法对象，获取参数类型？TODO: 这里为什么只获取到一个参数？
     Class<?> parameterTypeClass = getParameterType(method);
+    // 获取方法的脚本语言渠道
     LanguageDriver languageDriver = getLanguageDriver(method);
+    // 通过注解获取sql片段，封装成SqlSource
     SqlSource sqlSource = getSqlSourceFromAnnotations(method, parameterTypeClass, languageDriver);
     if (sqlSource != null) {
+      // 获取方法上可能存在的配置信息，配置信息由@Options注解指定
       Options options = method.getAnnotation(Options.class);
       final String mappedStatementId = type.getName() + "." + method.getName();
       Integer fetchSize = null;
@@ -355,6 +380,7 @@ public class MapperAnnotationBuilder {
         resultMapId = parseResultMap(method);
       }
 
+      // 与解析xml一样，将获取到的信息包装成 MappedStatement 对象并存入 Configuration 类中
       assistant.addMappedStatement(
           mappedStatementId,
           sqlSource,
@@ -465,19 +491,34 @@ public class MapperAnnotationBuilder {
     return returnType;
   }
 
+  /**
+   * 通过注解后去SqlSource对象
+   * @param method 含有注解的方法
+   * @param parameterType 参数类型
+   * @param languageDriver 语言渠道
+   * @return SqlSource对象
+   */
   private SqlSource getSqlSourceFromAnnotations(Method method, Class<?> parameterType, LanguageDriver languageDriver) {
     try {
+      // 遍历寻找是否有 Select、Insert、Update、Delete四个注解之一
       Class<? extends Annotation> sqlAnnotationType = getSqlAnnotationType(method);
+      // 遍历寻找是否有 SelectProvider、InsertProvider、UpdateProvider、DeleteProvider 四个注解之一
       Class<? extends Annotation> sqlProviderAnnotationType = getSqlProviderAnnotationType(method);
       if (sqlAnnotationType != null) {
         if (sqlProviderAnnotationType != null) {
+          // 两类注解不能同时使用
           throw new BindingException("You cannot supply both a static SQL and SqlProvider to method named " + method.getName());
         }
+        // 取出Select、Insert、Update、Delete四个注解之一
         Annotation sqlAnnotation = method.getAnnotation(sqlAnnotationType);
+        // 取出value值
         final String[] strings = (String[]) sqlAnnotation.getClass().getMethod("value").invoke(sqlAnnotation);
+        // 基于字符串构建SqlSource，直接注解获取SQL
         return buildSqlSourceFromStrings(strings, parameterType, languageDriver);
       } else if (sqlProviderAnnotationType != null) {
+        // 取出 SelectProvider、InsertProvider、UpdateProvider、DeleteProvider 四个注解之一
         Annotation sqlProviderAnnotation = method.getAnnotation(sqlProviderAnnotationType);
+        // 根据对应的方法获取SqlSource，间接注解获取SQL
         return new ProviderSqlSource(assistant.getConfiguration(), sqlProviderAnnotation, type, method);
       }
       return null;
@@ -486,6 +527,13 @@ public class MapperAnnotationBuilder {
     }
   }
 
+  /**
+   * 基于字符串创建SqlSource对象
+   * @param strings 字符串，即直接映射注解中的字符串
+   * @param parameterTypeClass 参数类型
+   * @param languageDriver 语言驱动
+   * @return 创建出来的SqlSource对象
+   */
   private SqlSource buildSqlSourceFromStrings(String[] strings, Class<?> parameterTypeClass, LanguageDriver languageDriver) {
     final StringBuilder sql = new StringBuilder();
     for (String fragment : strings) {

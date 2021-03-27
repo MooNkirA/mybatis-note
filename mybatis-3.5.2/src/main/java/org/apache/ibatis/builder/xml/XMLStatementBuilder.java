@@ -34,6 +34,10 @@ import org.apache.ibatis.scripting.LanguageDriver;
 import org.apache.ibatis.session.Configuration;
 
 /**
+ * 单条数据操作语句的解析器，解析类似如下的标签
+ *    <select id="selectUser" resultType="com.example.demo.UserBean">
+ *       select * from `user` where id = #{id}
+ *    </select>
  * @author Clinton Begin
  */
 public class XMLStatementBuilder extends BaseBuilder {
@@ -53,47 +57,71 @@ public class XMLStatementBuilder extends BaseBuilder {
     this.requiredDatabaseId = databaseId;
   }
 
+  /**
+   * 解析select、insert、update、delete这四类标签节点
+   */
   public void parseStatementNode() {
+    // 读取当前标签节点的id与databaseId
     String id = context.getStringAttribute("id");
     String databaseId = context.getStringAttribute("databaseId");
 
+    // 验证id与databaseId是否匹配。MyBatis允许多数据库配置，因此有些语句只对特定数据库生效
     if (!databaseIdMatchesCurrent(id, databaseId, this.requiredDatabaseId)) {
       return;
     }
 
+    // 读取节点名称，即select、insert、update、delete
     String nodeName = context.getNode().getNodeName();
+    // 读取和判断语句类型
     SqlCommandType sqlCommandType = SqlCommandType.valueOf(nodeName.toUpperCase(Locale.ENGLISH));
+    // 判断是否为<select>标签
     boolean isSelect = sqlCommandType == SqlCommandType.SELECT;
+    /*
+     * 获取相关属性值
+     *  flushCache属性值：如果是select标签，默认值是false；其他标签默认值为true
+     *  useCache属性值：如果是select标签，默认值是true；其他标签默认值为false
+     *  resultOrdered属性值：所有标签其默认值均为false
+     */
     boolean flushCache = context.getBooleanAttribute("flushCache", !isSelect);
     boolean useCache = context.getBooleanAttribute("useCache", isSelect);
     boolean resultOrdered = context.getBooleanAttribute("resultOrdered", false);
 
     // Include Fragments before parsing
     XMLIncludeTransformer includeParser = new XMLIncludeTransformer(configuration, builderAssistant);
+    // 处理语句标签中的include节点
     includeParser.applyIncludes(context.getNode());
 
+    // 获取标签配置的参数类型
     String parameterType = context.getStringAttribute("parameterType");
     Class<?> parameterTypeClass = resolveClass(parameterType);
 
+    // 语言类型
     String lang = context.getStringAttribute("lang");
     LanguageDriver langDriver = getLanguageDriver(lang);
 
     // Parse selectKey after includes and remove them.
+    // 处理SelectKey节点，在这里会将KeyGenerator加入到Configuration.keyGenerators中
     processSelectKeyNodes(id, parameterTypeClass, langDriver);
 
     // Parse the SQL (pre: <selectKey> and <include> were parsed and removed)
+    // 此时，<selectKey> 和 <include> 节点均已被解析完毕并被删除，开始进行SQL解析
     KeyGenerator keyGenerator;
     String keyStatementId = id + SelectKeyGenerator.SELECT_KEY_SUFFIX;
     keyStatementId = builderAssistant.applyCurrentNamespace(keyStatementId, true);
+    // 判断是否已经有解析好的KeyGenerator
     if (configuration.hasKeyGenerator(keyStatementId)) {
       keyGenerator = configuration.getKeyGenerator(keyStatementId);
     } else {
+      // 全局或者本语句只要启用自动key生成，则使用key生成
       keyGenerator = context.getBooleanAttribute("useGeneratedKeys",
           configuration.isUseGeneratedKeys() && SqlCommandType.INSERT.equals(sqlCommandType))
           ? Jdbc3KeyGenerator.INSTANCE : NoKeyGenerator.INSTANCE;
     }
 
+    // 解析操作语句中的sql，封装成SqlSource。(注意：目前只是将解析后的sql结构包装成SqlSource对象，在执行阶段时，才真正拼接可执行的sql)
     SqlSource sqlSource = langDriver.createSqlSource(configuration, context, parameterTypeClass);
+    /* 读取操作标签各个配置属性-start */
+    // 获取预编译类型设置，默认值为 StatementType.PREPARED
     StatementType statementType = StatementType.valueOf(context.getStringAttribute("statementType", StatementType.PREPARED.toString()));
     Integer fetchSize = context.getIntAttribute("fetchSize");
     Integer timeout = context.getIntAttribute("timeout");
@@ -109,7 +137,10 @@ public class XMLStatementBuilder extends BaseBuilder {
     String keyProperty = context.getStringAttribute("keyProperty");
     String keyColumn = context.getStringAttribute("keyColumn");
     String resultSets = context.getStringAttribute("resultSets");
+    /* 读取操作标签各个配置属性-end */
 
+    // 使用MapperBuilderAssistant类，创建MappedStatement对象，并写入到Configuration类中
+    // 即在MyBatis中，每个select、insert、update、delete标签都相应一个MappedStatement对象实例
     builderAssistant.addMappedStatement(id, sqlSource, statementType, sqlCommandType,
         fetchSize, timeout, parameterMap, parameterTypeClass, resultMap, resultTypeClass,
         resultSetTypeEnum, flushCache, useCache, resultOrdered,
@@ -175,14 +206,17 @@ public class XMLStatementBuilder extends BaseBuilder {
   }
 
   private boolean databaseIdMatchesCurrent(String id, String databaseId, String requiredDatabaseId) {
+    // 数据库厂商标识requiredDatabaseId不为空，校验是否与当前标签的databaseId相等
     if (requiredDatabaseId != null) {
       return requiredDatabaseId.equals(databaseId);
     }
+    // 数据库厂商标识requiredDatabaseId不空，当前标签有配置databaseId，则返回false
     if (databaseId != null) {
       return false;
     }
     id = builderAssistant.applyCurrentNamespace(id, false);
     if (!this.configuration.hasStatement(id, false)) {
+      // 如果当前操作语句标签在Configuration类不存在，则返回true，建立id与标签的映射关系
       return true;
     }
     // skip this statement if there is a previous one with a not null databaseId

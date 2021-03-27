@@ -29,9 +29,12 @@ import org.apache.ibatis.type.TypeHandler;
 import org.apache.ibatis.type.TypeHandlerRegistry;
 
 /**
+ * 所有建造者的基类，抽象类，但是本身不含有任何的抽象方法，因此它的子类无须实现它的任何方法。
+ * BaseBuilder类更像一个工具类，为继承它的建造者类提供了众多实用的工具方法
  * @author Clinton Begin
  */
 public abstract class BaseBuilder {
+  // 重点记忆与理解Configuration类，在MyBatis整个流程中都存在
   protected final Configuration configuration;
   protected final TypeAliasRegistry typeAliasRegistry;
   protected final TypeHandlerRegistry typeHandlerRegistry;
@@ -113,6 +116,7 @@ public abstract class BaseBuilder {
       return null;
     }
     try {
+      // 根据别名获取反射对象
       return resolveAlias(alias);
     } catch (Exception e) {
       throw new BuilderException("Error resolving class. Cause: " + e, e);

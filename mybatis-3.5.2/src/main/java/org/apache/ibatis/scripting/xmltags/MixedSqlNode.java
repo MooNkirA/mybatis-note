@@ -18,6 +18,7 @@ package org.apache.ibatis.scripting.xmltags;
 import java.util.List;
 
 /**
+ *
  * @author Clinton Begin
  */
 public class MixedSqlNode implements SqlNode {
@@ -29,6 +30,7 @@ public class MixedSqlNode implements SqlNode {
 
   @Override
   public boolean apply(DynamicContext context) {
+    // 循环所有子节点，再根据不同类型的SqlNode实现调用相应的apply方法
     contents.forEach(node -> node.apply(context));
     return true;
   }

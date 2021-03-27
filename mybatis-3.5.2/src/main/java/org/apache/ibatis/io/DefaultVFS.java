@@ -50,6 +50,14 @@ public class DefaultVFS extends VFS {
     return true;
   }
 
+  /**
+   * 列出指定url下符合条件的资源名称
+   *
+   * @param url  The URL that identifies the resource to list.
+   * @param path
+   * @return
+   * @throws IOException
+   */
   @Override
   public List<String> list(URL url, String path) throws IOException {
     InputStream is = null;
@@ -58,6 +66,7 @@ public class DefaultVFS extends VFS {
 
       // First, try to find the URL of a JAR file containing the requested resource. If a JAR
       // file is found, then we'll list child resources by reading the JAR.
+      // 先从jar包中查找
       URL jarUrl = findJarForResource(url);
       if (jarUrl != null) {
         is = jarUrl.openStream();
@@ -94,6 +103,7 @@ public class DefaultVFS extends VFS {
              * the class loader as a child of the current resource. If any line fails
              * then we assume the current resource is not a directory.
              */
+            // 核心处理逻辑部分
             is = url.openStream();
             BufferedReader reader = new BufferedReader(new InputStreamReader(is));
             List<String> lines = new ArrayList<>();
@@ -150,6 +160,7 @@ public class DefaultVFS extends VFS {
           String resourcePath = path + "/" + child;
           resources.add(resourcePath);
           URL childUrl = new URL(prefix + child);
+          // 递归文件夹
           resources.addAll(list(childUrl, resourcePath));
         }
       }
@@ -167,6 +178,8 @@ public class DefaultVFS extends VFS {
   }
 
   /**
+   * 列出给定 jar包 中符合条件的资源名称;
+   * <p>
    * List the names of the entries in the given {@link JarInputStream} that begin with the
    * specified {@code path}. Entries will match with or without a leading slash.
    *
@@ -208,6 +221,8 @@ public class DefaultVFS extends VFS {
   }
 
   /**
+   * 找出指定路径上的 jar包，返回 jar包的准确路径;
+   * <p>
    * Attempts to deconstruct the given URL to find a JAR file containing the resource referenced
    * by the URL. That is, assuming the URL references a JAR entry, this method will return a URL
    * that references the JAR file containing the entry. If the JAR cannot be located, then this
@@ -294,6 +309,8 @@ public class DefaultVFS extends VFS {
   }
 
   /**
+   * 将 jar包名称转为路径
+   * <p>
    * Converts a Java package name to a path that can be looked up with a call to
    * {@link ClassLoader#getResources(String)}.
    *
@@ -304,6 +321,8 @@ public class DefaultVFS extends VFS {
   }
 
   /**
+   * 判断指定路径上是否是 jar包。
+   * <p>
    * Returns true if the resource located at the given URL is a JAR file.
    *
    * @param url The URL of the resource to test.
@@ -325,7 +344,7 @@ public class DefaultVFS extends VFS {
     try {
       is = url.openStream();
       is.read(buffer, 0, JAR_MAGIC.length);
-      if (Arrays.equals(buffer, JAR_MAGIC)) {
+      if (Arrays.equals(buffer, JAR_MAGIC)) { // 判断开始字节是不是jar包
         if (log.isDebugEnabled()) {
           log.debug("Found JAR: " + url);
         }

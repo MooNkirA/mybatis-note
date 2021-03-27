@@ -7,7 +7,7 @@
     <properties resource="db.properties"/>
 
     <settings>
-        <!--全局全局地开启或关闭配置文件中的所有映射器已经配置的任何缓存，默认为true-->
+        <!--全局地开启或关闭配置文件中的所有映射器已经配置的任何缓存，默认为true-->
         <setting name="cacheEnabled" value="true"/>
         <!--延迟加载的全局开关。当开启时，所有关联对象都会延迟加载。 特定关联关系中可通过设置
             fetchType属性来覆盖该项的开关状态。默认值为false -->
@@ -80,7 +80,8 @@
     <!-- 设置别名 -->
     <typeAliases>
         <!--<typeAlias type="com.moon.mybatis.pojo.ConsultConfigArea" alias="Area"/>-->
-        <package name="com.moon.mybatis.pojo"/>
+        <!--<package name="com.moon.mybatis.pojo"/>-->
+        <package name="com.moon"/>
     </typeAliases>
 
     <!-- 环境配置 -->
@@ -95,10 +96,24 @@
             </dataSource>
         </environment>
     </environments>
+
+    <!-- 数据库厂商标识 此示例使用了MySQL数据库，
+        所以最终会Configuration类中的databaseId属性存入值为"mysql"
+    -->
+    <!--<databaseIdProvider type="DB_VENDOR">
+        <property name="SQL Server" value="sqlserver"/>
+        <property name="DB2" value="db2"/>
+        <property name="Oracle" value="oracle" />
+        <property name="MySQL" value="mysql" />
+    </databaseIdProvider>-->
+
     <!-- 映射器 -->
     <mappers>
         <!-- 使用相对于类路径的资源引用 -->
         <mapper resource="xml/CommomMapper.xml"/>
         <mapper resource="xml/UserMapper.xml"/>
+        <mapper resource="xml/CacheMapper.xml"/>
+        <mapper resource="xml/ConsultConfigAreaMapper.xml"/>
+        <mapper resource="xml/ConsultRecordMapper.xml"/>
     </mappers>
 </configuration>

@@ -37,14 +37,26 @@ import org.apache.ibatis.reflection.SystemMetaObject;
 /**
  * @author Clinton Begin
  */
+
+/**
+ * CacheBuilder 类是缓存建造者，它负责完成缓存对象的创建
+ */
 public class CacheBuilder {
+  // Cache的编号
   private final String id;
+  // Cache的实现类
   private Class<? extends Cache> implementation;
+  // Cache的装饰器列表
   private final List<Class<? extends Cache>> decorators;
+  // Cache的大小
   private Integer size;
+  // Cache的清理间隔
   private Long clearInterval;
+  // Cache是否可读写
   private boolean readWrite;
+  // Cache的配置信息
   private Properties properties;
+  // Cache是否阻塞
   private boolean blocking;
 
   public CacheBuilder(String id) {
@@ -89,23 +101,49 @@ public class CacheBuilder {
     return this;
   }
 
+  /**
+   * 组建缓存
+   *
+   *     <cache type="PERPETUAL"
+   *            eviction="FIFO"
+   *            flushInterval="60000"
+   *            size="512"
+   *            readOnly="true"
+   *            blocking="true">
+   *         <property name="timeout" value="20"/>
+   *     </cache>
+   *
+   * @return 缓存对象
+   */
   public Cache build() {
+    // 设置缓存的默认实现、默认装饰器（仅设置，并未装配）
     setDefaultImplementations();
+    // 创建默认的缓存
     Cache cache = newBaseCacheInstance(implementation, id);
+    // 设置缓存的属性
     setCacheProperties(cache);
     // issue #352, do not apply decorators to custom caches
     if (PerpetualCache.class.equals(cache.getClass())) {
+      // 缓存实现是PerpetualCache，即不是用户自定义的缓存实现
       for (Class<? extends Cache> decorator : decorators) {
+        // 为缓存逐级嵌套自定义的装饰器
         cache = newCacheDecoratorInstance(decorator, cache);
+        // 为装饰器设置属性
         setCacheProperties(cache);
       }
+      // 为缓存增加标准的装饰器
       cache = setStandardDecorators(cache);
     } else if (!LoggingCache.class.isAssignableFrom(cache.getClass())) {
+      // 增加日志装饰器
       cache = new LoggingCache(cache);
     }
+    // 返回被包装好的缓存
     return cache;
   }
 
+  /**
+   * 设置缓存的默认实现和默认装饰器
+   */
   private void setDefaultImplementations() {
     if (implementation == null) {
       implementation = PerpetualCache.class;
@@ -115,24 +153,36 @@ public class CacheBuilder {
     }
   }
 
+  /**
+   * 为缓存增加标准的装饰器
+   * @param cache 被装饰的缓存
+   * @return 装饰结束的缓存
+   */
   private Cache setStandardDecorators(Cache cache) {
     try {
       MetaObject metaCache = SystemMetaObject.forObject(cache);
+      // 设置缓存大小
       if (size != null && metaCache.hasSetter("size")) {
         metaCache.setValue("size", size);
       }
+      // 如果定义了清理间隔，则使用定时清理装饰器装饰缓存
       if (clearInterval != null) {
         cache = new ScheduledCache(cache);
         ((ScheduledCache) cache).setClearInterval(clearInterval);
       }
+      // 如果允许读写，则使用序列化装饰器装饰缓存
       if (readWrite) {
         cache = new SerializedCache(cache);
       }
+      // 使用日志装饰器装饰缓存
       cache = new LoggingCache(cache);
+      // 使用同步装饰器装饰缓存
       cache = new SynchronizedCache(cache);
+      // 如果启用了阻塞功能，则使用阻塞装饰器装饰缓存
       if (blocking) {
         cache = new BlockingCache(cache);
       }
+      // 返回被层层装饰的缓存
       return cache;
     } catch (Exception e) {
       throw new CacheException("Error building standard cache decorators.  Cause: " + e, e);

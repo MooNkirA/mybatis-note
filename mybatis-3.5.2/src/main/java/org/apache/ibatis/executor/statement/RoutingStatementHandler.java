@@ -30,14 +30,17 @@ import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
 
 /**
+ * RoutingStatementHandler 类是一个代理类，它能够根据传入的 MappedStatement 对象的具体类型选中一个具体的被代理对象，然后将所有实际操作都委托给被代理对象。
  * @author Clinton Begin
  */
 public class RoutingStatementHandler implements StatementHandler {
 
+  // 根据语句类型选取的被代理类型的对象
   private final StatementHandler delegate;
 
   public RoutingStatementHandler(Executor executor, MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler, BoundSql boundSql) {
 
+    // 根据语句类型选择被代理对象
     switch (ms.getStatementType()) {
       case STATEMENT:
         delegate = new SimpleStatementHandler(executor, ms, parameter, rowBounds, resultHandler, boundSql);
