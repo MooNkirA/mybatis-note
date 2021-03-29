@@ -45,6 +45,8 @@ import org.apache.ibatis.transaction.Transaction;
 import org.apache.ibatis.type.TypeHandlerRegistry;
 
 /**
+ * Executor 接口的抽象实现，实现了接口大部分方法，主要提供了缓存管理和事务管理的能力，
+ * 其子类只需要实现的 doUpdate,doQuery 等抽象方法即可，还可以基于此抽象类的方法做增强处理
  * @author Clinton Begin
  */
 public abstract class BaseExecutor implements Executor {
@@ -154,6 +156,7 @@ public abstract class BaseExecutor implements Executor {
    */
   @Override
   public <E> List<E> query(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler) throws SQLException {
+    // 获取构建后的sql
     BoundSql boundSql = ms.getBoundSql(parameter);
     // 生成缓存键
     CacheKey key = createCacheKey(ms, parameter, rowBounds, boundSql);

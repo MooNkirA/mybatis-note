@@ -40,7 +40,7 @@ public class RoutingStatementHandler implements StatementHandler {
 
   public RoutingStatementHandler(Executor executor, MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler, BoundSql boundSql) {
 
-    // 根据语句类型选择被代理对象
+    // 根据语句类型选择创建相应的StatementHandler实现类，并赋值给delegate属性
     switch (ms.getStatementType()) {
       case STATEMENT:
         delegate = new SimpleStatementHandler(executor, ms, parameter, rowBounds, resultHandler, boundSql);
@@ -59,6 +59,7 @@ public class RoutingStatementHandler implements StatementHandler {
 
   @Override
   public Statement prepare(Connection connection, Integer transactionTimeout) throws SQLException {
+    // 调用被代理实例的prepare方法，此时会先调用抽象父类BaseStatementHandler的prepare
     return delegate.prepare(connection, transactionTimeout);
   }
 

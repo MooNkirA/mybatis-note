@@ -174,7 +174,7 @@ public class MapperMethod {
       RowBounds rowBounds = method.extractRowBounds(args);
       result = sqlSession.selectList(command.getName(), param, rowBounds);
     } else {
-
+      // 调用基础的查询api
       result = sqlSession.selectList(command.getName(), param);
     }
     // issue #510 Collections & arrays support

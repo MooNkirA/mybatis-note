@@ -58,7 +58,10 @@ public class SimpleExecutor extends BaseExecutor {
     Statement stmt = null;
     try {
       Configuration configuration = ms.getConfiguration();
+      // 获取StatementHandler组件，其实就是使用jdk原生数据库的Statement或PrepareStatement执行操作
+      // 这里创建RoutingStatementHandler实例，该实例中会持有根据statementType来决定具体的StatementHandler实现类
       StatementHandler handler = configuration.newStatementHandler(wrapper, ms, parameter, rowBounds, resultHandler, boundSql);
+      // 通过StatementHandler来获取Statement对象
       stmt = prepareStatement(handler, ms.getStatementLog());
       return handler.query(stmt, resultHandler);
     } finally {
@@ -69,7 +72,9 @@ public class SimpleExecutor extends BaseExecutor {
   @Override
   protected <E> Cursor<E> doQueryCursor(MappedStatement ms, Object parameter, RowBounds rowBounds, BoundSql boundSql) throws SQLException {
     Configuration configuration = ms.getConfiguration();
+    // 获取StatementHandler组件，其实就是使用jdk原生数据库的Statement或PrepareStatement执行操作
     StatementHandler handler = configuration.newStatementHandler(wrapper, ms, parameter, rowBounds, null, boundSql);
+    // 通过StatementHandler来获取Statement对象
     Statement stmt = prepareStatement(handler, ms.getStatementLog());
     stmt.closeOnCompletion();
     return handler.queryCursor(stmt);
@@ -82,8 +87,11 @@ public class SimpleExecutor extends BaseExecutor {
 
   private Statement prepareStatement(StatementHandler handler, Log statementLog) throws SQLException {
     Statement stmt;
+    // 创建带日志记录的Connection连接对象（代理）
     Connection connection = getConnection(statementLog);
+    // 获取Statement实例
     stmt = handler.prepare(connection, transaction.getTimeout());
+    // 此方法将sql语句的占位符转成具体参数值。重点方法
     handler.parameterize(stmt);
     return stmt;
   }
