@@ -27,11 +27,25 @@ import org.apache.ibatis.reflection.invoker.Invoker;
 import org.apache.ibatis.reflection.property.PropertyTokenizer;
 
 /**
+ * 一个 Bean经过 BeanWrapper封装后，就可以暴露出大量的 易用方法，从而可以简单地实现对其属性、方法的操作
+ *
  * @author Clinton Begin
  */
 public class BeanWrapper extends BaseWrapper {
 
+  /*
+   * 被包装对象的元对象（继承自父类BaseWrapper）
+   * protected final MetaObject;
+   */
+
+  /**
+   * 被包装的对象
+   */
   private final Object object;
+
+  /**
+   * 被包装对象所属类的元类
+   */
   private final MetaClass metaClass;
 
   public BeanWrapper(MetaObject metaObject, Object object) {
@@ -56,6 +70,7 @@ public class BeanWrapper extends BaseWrapper {
       Object collection = resolveCollection(prop, object);
       setCollectionValue(prop, collection, value);
     } else {
+      // 反射赋值
       setBeanProperty(prop, object, value);
     }
   }

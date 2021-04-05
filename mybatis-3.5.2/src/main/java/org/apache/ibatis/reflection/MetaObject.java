@@ -30,12 +30,22 @@ import org.apache.ibatis.reflection.wrapper.ObjectWrapperFactory;
 /**
  * @author Clinton Begin
  */
+
+/**
+ * MetaObject类中涵盖了对应 Object类中的全部信息，并经过变化和拆解得到了一些更为细节的信息。
+ * 因此，可以将 MetaObject类理解为一个涵盖对象(Object)中更多细节信息和功能的类，称为“元对 象”。
+ */
 public class MetaObject {
 
+  // 原始对象
   private final Object originalObject;
+  // 对象包装器
   private final ObjectWrapper objectWrapper;
+  // 对象工厂
   private final ObjectFactory objectFactory;
+  // 对象包装器工厂
   private final ObjectWrapperFactory objectWrapperFactory;
+  // 反射工厂
   private final ReflectorFactory reflectorFactory;
 
   private MetaObject(Object object, ObjectFactory objectFactory, ObjectWrapperFactory objectWrapperFactory, ReflectorFactory reflectorFactory) {
@@ -111,11 +121,13 @@ public class MetaObject {
 
   public Object getValue(String name) {
     PropertyTokenizer prop = new PropertyTokenizer(name);
+    // 如果还有下层属性
     if (prop.hasNext()) {
       MetaObject metaValue = metaObjectForProperty(prop.getIndexedName());
       if (metaValue == SystemMetaObject.NULL_META_OBJECT) {
         return null;
       } else {
+        // 循环解析
         return metaValue.getValue(prop.getChildren());
       }
     } else {

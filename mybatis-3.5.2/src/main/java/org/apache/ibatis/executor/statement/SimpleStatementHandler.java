@@ -70,8 +70,11 @@ public class SimpleStatementHandler extends BaseStatementHandler {
 
   @Override
   public <E> List<E> query(Statement statement, ResultHandler resultHandler) throws SQLException {
+    // 获取sql语句
     String sql = boundSql.getSql();
+	  // 执行sql语句
     statement.execute(sql);
+	  // 使用resultSetHandler处理查询结果
     return resultSetHandler.handleResultSets(statement);
   }
 
@@ -83,14 +86,20 @@ public class SimpleStatementHandler extends BaseStatementHandler {
   }
 
   @Override
+  // 使用底层的statment对象来完成对数据库的操作
   protected Statement instantiateStatement(Connection connection) throws SQLException {
     if (mappedStatement.getResultSetType() == ResultSetType.DEFAULT) {
       return connection.createStatement();
     } else {
+	    // 设置结果集是否可以滚动以及其游标是否可以上下移动，设置结果集是否可更新
       return connection.createStatement(mappedStatement.getResultSetType().getValue(), ResultSet.CONCUR_READ_ONLY);
     }
   }
 
+  /**
+   * SimpleStatementHandler中 parameterize方法的实现为空，因为它只需完成字符串替换即可，不需要进行参数处理
+   * @param statement
+   */
   @Override
   public void parameterize(Statement statement) {
     // N/A

@@ -65,7 +65,7 @@ public class DefaultParameterHandler implements ParameterHandler {
 
   /**
    * 为语句设置参数，
-   * setParameters 方法的实现逻辑也很简单，就是依次取出每个参数的值，然后根据参数类型调用 PreparedStatement中的赋值方法完成赋 值。
+   * setParameters 方法的实现逻辑也很简单，就是依次取出每个参数的值，然后根据参数类型调用 PreparedStatement中的赋值方法完成赋值。
    * @param ps 语句
    */
   @Override
@@ -94,7 +94,7 @@ public class DefaultParameterHandler implements ParameterHandler {
             MetaObject metaObject = configuration.newMetaObject(parameterObject);
             value = metaObject.getValue(propertyName);
           }
-          // 确定该参数的处理器
+          // 获取该参数相应的处理器（注：策略设计模式的应用）
           TypeHandler typeHandler = parameterMapping.getTypeHandler();
           JdbcType jdbcType = parameterMapping.getJdbcType();
           if (value == null && jdbcType == null) {

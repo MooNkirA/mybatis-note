@@ -72,6 +72,7 @@ public abstract class BaseStatementHandler implements StatementHandler {
     this.boundSql = boundSql;
     // 通过Configuration类创建SQL语句占位符处理器 ParameterHandler
     this.parameterHandler = configuration.newParameterHandler(mappedStatement, parameterObject, boundSql);
+    // 通过Configuration类创建结果集处理器 ResultSetHandler
     this.resultSetHandler = configuration.newResultSetHandler(executor, mappedStatement, rowBounds, parameterHandler, resultHandler, boundSql);
   }
 
