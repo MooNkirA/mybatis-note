@@ -31,6 +31,6 @@ public class ConsultIdCardInfoWithContract implements Serializable {
     public String nation;
 
     /* 用于测试多表关联查询中，resultMap结果映射中的 collection 属性 */
-    List<ConsultContractCardInfo> contractCardInfoList;
+    List<ConsultContract> consultContractList;
 
 }

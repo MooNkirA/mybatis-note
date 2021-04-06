@@ -5,6 +5,7 @@ import com.moon.mybatis.dao.CommonMapper;
 import com.moon.mybatis.dao.ConsultConfigAreaMapper;
 import com.moon.mybatis.dao.UserMapper;
 import com.moon.mybatis.pojo.ConsultContract;
+import com.moon.mybatis.pojo.ConsultContractCardInfo;
 import com.moon.mybatis.pojo.ConsultIdCardInfo;
 import com.moon.mybatis.pojo.ConsultIdCardInfoWithContract;
 import org.apache.ibatis.io.Resources;
@@ -58,12 +59,22 @@ public class MyBatisTest {
         System.out.println(mapper.queryContractOnebyCardId());
     }
 
-    /* 多表联合查询，单条数据中包含多条关联表的数据，resultMap的association使用测试 */
+    /* 多表联合查询，单条数据中包含多条关联表的数据，resultMap的collection使用测试 */
     @Test
     public void testResultMapCollection() {
         CommonMapper mapper = this.getMapper(CommonMapper.class);
         ConsultIdCardInfoWithContract consultIdCardInfoWithContract = mapper.queryIdcardinfobyCardId("456979432");
         System.out.println(consultIdCardInfoWithContract);
+    }
+
+    /* 单表查询，resultMap的子标签collection的select属性测试嵌套查询 */
+    @Test
+    public void testSingleTableCollection() {
+        CommonMapper mapper = this.getMapper(CommonMapper.class);
+        List<ConsultContractCardInfo> contracts = mapper.queryAllConsultContract();
+        for (ConsultContractCardInfo contract : contracts) {
+            System.out.println(contract.getContractCode() + " :: " + contract.getInfos());
+        }
     }
 
     /* 测试mapper接口使用Map作为方法入参传递 */

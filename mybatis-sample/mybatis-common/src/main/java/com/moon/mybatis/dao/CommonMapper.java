@@ -1,6 +1,7 @@
 package com.moon.mybatis.dao;
 
 import com.moon.mybatis.pojo.ConsultContract;
+import com.moon.mybatis.pojo.ConsultContractCardInfo;
 import com.moon.mybatis.pojo.ConsultContractCardInfoWithIdCardInfo;
 import com.moon.mybatis.pojo.ConsultIdCardInfo;
 import com.moon.mybatis.pojo.ConsultIdCardInfoWithContract;
@@ -25,8 +26,11 @@ public interface CommonMapper {
     /* 多表联合查询，单条数据中包含单条关联表的数据，resultMap的association使用测试 */
     ConsultContractCardInfoWithIdCardInfo queryContractOnebyCardId();
 
-    /* 多表联合查询，单条数据中包含多条关联表的数据，resultMap的association使用测试 */
+    /* 多表联合查询，单条数据中包含多条关联表的数据，resultMap的collection使用测试 */
     ConsultIdCardInfoWithContract queryIdcardinfobyCardId(@Param("psptId") String psptId);
+
+    /* 单表查询，resultMap的子标签collection的select属性测试嵌套查询 */
+    List<ConsultContractCardInfo> queryAllConsultContract();
 
     /* 使用Map作为方法入参传递 */
     List<Map<String, Object>> queryUserByPsptIdMap(Map<String, Object> param);

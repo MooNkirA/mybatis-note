@@ -6,7 +6,7 @@
     <cache eviction="FIFO" flushInterval="60000" size="512" readOnly="true"/>
 
     <!-- 基础结果集映射，使用类的完全限定名的方式指定type -->
-    <resultMap id="ContractResultMap" type="com.moon.mybatis.pojo.ConsultContractCardInfo">
+    <resultMap id="ContractResultMap" type="com.moon.mybatis.pojo.ConsultContract">
         <id column="CONTRACT_ID" property="contractId"/>
         <result column="PSPTID" property="psptId"/>
         <result column="CONTRACT_CODE" property="contractCode"/>
@@ -61,7 +61,25 @@
             javaType 指定映射的类型，因为是多个结果，所以需要指定为List类型
             resultMap 指定结果映射的引用，当前查询的结果字段与Java bean 属性不一致，使用此方法指定字段与属性的映射关系
          -->
-        <collection property="contractCardInfoList" javaType="java.util.List" resultMap="ContractResultMap"/>
+        <collection property="consultContractList" javaType="java.util.List" resultMap="ContractResultMap"/>
+    </resultMap>
+
+    <!-- resultMap 子标签 collection 使用 select 与 column 属性进行嵌套查询 -->
+    <resultMap id="ContractResultMapWithIdCardInfo" type="com.moon.mybatis.pojo.ConsultContractCardInfo">
+        <id column="CONTRACT_ID" property="contractId"/>
+        <result column="PSPTID" property="psptId"/>
+        <result column="CONTRACT_CODE" property="contractCode"/>
+        <result column="ACTIVETIME" property="activeTime"/>
+        <result column="STATE" property="state"/>
+        <!-- 关联的嵌套 Select 查询
+            column：数据库中的列名，或者是列的别名。一般情况下，这和传递给 resultSet.getString(columnName) 方法的参数一样。
+                    注意：在使用复合主键的时候，你可以使用 column="{prop1=col1,prop2=col2}"
+                    这样的语法来指定多个传递给嵌套 Select 查询语句的列名。这会使得 prop1 和 prop2 作为参数对象，被设置为对应嵌套 Select 语句的参数。
+            select：用于加载复杂类型属性的映射语句的 ID，它会从 column 属性指定的列中检索数据，作为参数传递给目标 select 语句。 具体请参考下面的例子。
+                    注意：在使用复合主键的时候，你可以使用 column="{prop1=col1,prop2=col2}" 这样的语法来指定多个传递给嵌套 Select 查询语句的列名。
+                    这会使得 prop1 和 prop2 作为参数对象，被设置为对应嵌套 Select 语句的参数。
+         -->
+        <collection property="infos" javaType="java.util.List" column="PSPTID" select="queryUserByPsptId"/>
     </resultMap>
 
     <!-- ******************************* databaseId 配置示例 start ********************************************** -->
@@ -101,6 +119,16 @@
         FROM consult_idcardinfo a
         JOIN consult_contract b ON a.psptId = b.psptId
         WHERE a.psptId = #{psptId}
+    </select>
+
+    <!-- 单表查询，使用 collection 标签 select 属性进行嵌套查询 -->
+    <select id="queryAllConsultContract" resultMap="ContractResultMapWithIdCardInfo">
+        SELECT * FROM consult_contract
+    </select>
+
+    <!-- 单表查询，用于测试 collection 标签 select 属性的嵌套查询 -->
+    <select id="queryUserByPsptId" parameterType="java.util.Map" resultMap="CardIdInfoResultMap">
+        select * from consult_idcardinfo where psptId = #{psptId,jdbcType=VARCHAR}
     </select>
 
     <!-- 方法参数为Map形式传入 -->

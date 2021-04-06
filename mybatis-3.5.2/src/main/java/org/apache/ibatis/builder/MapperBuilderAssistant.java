@@ -132,7 +132,7 @@ public class MapperBuilderAssistant extends BaseBuilder {
   }
 
   /**
-   * 创建一个新的缓存
+   * 通过builderAssistant创建缓存对象，并添加至configuration
    * @param typeClass 缓存的实现类
    * @param evictionClass 缓存的清理类，即使用哪种包装类来清理缓存
    * @param flushInterval 缓存清理时间间隔
@@ -149,6 +149,7 @@ public class MapperBuilderAssistant extends BaseBuilder {
       boolean readWrite,
       boolean blocking,
       Properties props) {
+	// 经典的建造起模式，创建一个cache对象
     Cache cache = new CacheBuilder(currentNamespace)
         .implementation(valueOrDefault(typeClass, PerpetualCache.class))
         .addDecorator(valueOrDefault(evictionClass, LruCache.class))
@@ -158,6 +159,7 @@ public class MapperBuilderAssistant extends BaseBuilder {
         .blocking(blocking)
         .properties(props)
         .build();
+    // 将缓存添加至configuration，注意二级缓存以命名空间为单位进行划分
     configuration.addCache(cache);
     currentCache = cache;
     return cache;
@@ -195,7 +197,7 @@ public class MapperBuilderAssistant extends BaseBuilder {
   }
 
   /**
-   * 创建结果映射对象
+   * 创建结果映射对象，并将其注册到configuration对象
    * @param id 输入参数参照 ResultMapResolver 属性
    * @return ResultMap对象
    */
@@ -206,7 +208,9 @@ public class MapperBuilderAssistant extends BaseBuilder {
       Discriminator discriminator,
       List<ResultMapping> resultMappings,
       Boolean autoMapping) {
+	 // 完善id，id的完整格式是"namespace.id"
     id = applyCurrentNamespace(id, false);
+    // 获得父类resultMap的完整id
     extend = applyCurrentNamespace(extend, true);
 
     // 解析ResultMap的继承关系
@@ -276,6 +280,7 @@ public class MapperBuilderAssistant extends BaseBuilder {
     return new Discriminator.Builder(configuration, resultMapping, namespaceDiscriminatorMap).build();
   }
 
+  // 添加MappedStatement对象
   public MappedStatement addMappedStatement(
       String id,
       SqlSource sqlSource,
@@ -305,6 +310,7 @@ public class MapperBuilderAssistant extends BaseBuilder {
     id = applyCurrentNamespace(id, false);
     boolean isSelect = sqlCommandType == SqlCommandType.SELECT;
 
+    // 使用建造者模式创建一个mappedStatment
     MappedStatement.Builder statementBuilder = new MappedStatement.Builder(configuration, id, sqlSource, sqlCommandType)
         .resource(resource)
         .fetchSize(fetchSize)
@@ -405,6 +411,7 @@ public class MapperBuilderAssistant extends BaseBuilder {
       String resultSet,
       String foreignColumn,
       boolean lazy) {
+    // 如果没有配置javaType，则根据对象的属性来推导出相应的javaType
     Class<?> javaTypeClass = resolveResultJavaType(resultType, property, javaType);
     TypeHandler<?> typeHandlerInstance = resolveTypeHandler(javaTypeClass, typeHandler);
     List<ResultMapping> composites;
