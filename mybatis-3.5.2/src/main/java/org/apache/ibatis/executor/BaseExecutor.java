@@ -192,6 +192,7 @@ public abstract class BaseExecutor implements Executor {
     }
     List<E> list;
     try {
+      // queryStack在嵌套查询时才有作用
       queryStack++;
       // 尝试从本地缓存获取结果
       list = resultHandler == null ? (List<E>) localCache.getObject(key) : null;
