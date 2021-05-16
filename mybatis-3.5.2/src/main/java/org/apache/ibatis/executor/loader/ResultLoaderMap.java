@@ -42,6 +42,8 @@ import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
 
 /**
+ * 被代理对象可能会有多个属性可以被懒加载，这些尚未完成加载的属性是在 ResultLoaderMap 类的实例中存储的。
+ * ResultLoaderMap 类主要就是一个 HashMap 类，该 HashMap 类中的键为属性名的大写，值为 LoadPair对象。
  * @author Clinton Begin
  * @author Franta Mejta
  */
@@ -76,8 +78,10 @@ public class ResultLoaderMap {
   }
 
   public boolean load(String property) throws SQLException {
+    // 将未加载的属性从映射中移除
     LoadPair pair = loaderMap.remove(property.toUpperCase(Locale.ENGLISH));
     if (pair != null) {
+      // 如果映射中存在，则调用load方法
       pair.load();
       return true;
     }
@@ -110,38 +114,47 @@ public class ResultLoaderMap {
     /**
      * Name of factory method which returns database connection.
      */
+    // 用来根据反射得到数据库连接的方法名
     private static final String FACTORY_METHOD = "getConfiguration";
     /**
      * Object to check whether we went through serialization..
      */
+    // 判断是否经过了序列化的标志位，因为该属性被设置了transient，经过一次序列化和反序列化后会变为null
     private final transient Object serializationCheck = new Object();
     /**
      * Meta object which sets loaded properties.
      */
+    // 输出结果对象的封装
     private transient MetaObject metaResultObject;
     /**
      * Result loader which loads unread properties.
      */
+    // 用以加载未加载属性的加载器
     private transient ResultLoader resultLoader;
     /**
      * Wow, logger.
      */
+    // 日志记录器
     private transient Log log;
     /**
      * Factory class through which we get database connection.
      */
+    // 用来获取数据库连接的工厂
     private Class<?> configurationFactory;
     /**
      * Name of the unread property.
      */
+    // 未加载的属性的属性名
     private String property;
     /**
      * ID of SQL statement which loads the property.
      */
+    // 能够加载未加载属性的SQL的编号
     private String mappedStatement;
     /**
      * Parameter of the sql statement.
      */
+    // 能够加载未加载属性的SQL的参数
     private Serializable mappedParameter;
 
     private LoadPair(final String property, MetaObject metaResultObject, ResultLoader resultLoader) {
@@ -184,8 +197,14 @@ public class ResultLoaderMap {
       this.load(null);
     }
 
+    /**
+     * 进行加载操作
+     * @param userObject 需要被懒加载的对象（只有当this.metaResultObject == null || this.resultLoader == null才生效，否则会采用属性metaResultObject对应的对象）
+     * @throws SQLException
+     */
     public void load(final Object userObject) throws SQLException {
-      if (this.metaResultObject == null || this.resultLoader == null) {
+      if (this.metaResultObject == null || this.resultLoader == null) { // 输出结果对象的封装不存在或者输出结果加载器不存在
+        // 判断用以加载属性的对应的SQL语句存在
         if (this.mappedParameter == null) {
           throw new ExecutorException("Property [" + this.property + "] cannot be loaded because "
                   + "required parameter of mapped statement ["
@@ -193,6 +212,7 @@ public class ResultLoaderMap {
         }
 
         final Configuration config = this.getConfiguration();
+        // 取出用来加载结果的SQL语句
         final MappedStatement ms = config.getMappedStatement(this.mappedStatement);
         if (ms == null) {
           throw new ExecutorException("Cannot lazy load property [" + this.property
@@ -201,7 +221,9 @@ public class ResultLoaderMap {
                   + this.mappedStatement + "]");
         }
 
+        // 创建结果对象的包装
         this.metaResultObject = config.newMetaObject(userObject);
+        // 创建结果加载器
         this.resultLoader = new ResultLoader(config, new ClosedExecutor(), ms, this.mappedParameter,
                 metaResultObject.getSetterType(this.property), null, null);
       }
@@ -210,6 +232,7 @@ public class ResultLoaderMap {
        * and executors aren't thread safe. (Is this sufficient?)
        *
        * A better approach would be making executors thread safe. */
+      // 只要经历过持久化，则可能在别的线程中了。为这次惰性加载创建的新线程ResultLoader
       if (this.serializationCheck == null) {
         final ResultLoader old = this.resultLoader;
         this.resultLoader = new ResultLoader(old.configuration, new ClosedExecutor(), old.mappedStatement,
@@ -279,6 +302,10 @@ public class ResultLoaderMap {
     }
   }
 
+  /**
+   *  ClosedExecutor类存在的目的就是通过 isClosed方法返回 true来表明自己是一个关闭的类，
+   *  以保证让任何遇到 ClosedExecutor 对象的操作都会重新创建一个新的有实际功能的 Executor。
+   */
   private static final class ClosedExecutor extends BaseExecutor {
 
     public ClosedExecutor() {

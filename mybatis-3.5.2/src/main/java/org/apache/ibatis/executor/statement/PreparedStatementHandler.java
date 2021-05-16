@@ -61,7 +61,9 @@ public class PreparedStatementHandler extends BaseStatementHandler {
   @Override
   public <E> List<E> query(Statement statement, ResultHandler resultHandler) throws SQLException {
     PreparedStatement ps = (PreparedStatement) statement;
+    // 执行sql语句
     ps.execute();
+    // 使用resultSetHandler处理查询结果
     return resultSetHandler.handleResultSets(ps);
   }
 
@@ -73,24 +75,37 @@ public class PreparedStatementHandler extends BaseStatementHandler {
   }
 
   @Override
+  // 使用底层的prepareStatement对象来完成对数据库的操作
   protected Statement instantiateStatement(Connection connection) throws SQLException {
     String sql = boundSql.getSql();
+    // 根据mappedStatement.getKeyGenerator字段（在insert标签中的useGeneratedKeys为true时，该类型即为Jdbc3KeyGenerator），创建prepareStatement
     if (mappedStatement.getKeyGenerator() instanceof Jdbc3KeyGenerator) {
+ 	    // 对于insert语句，获取到自增主键
       String[] keyColumnNames = mappedStatement.getKeyColumns();
       if (keyColumnNames == null) {
+    	  // 返回数据库生成的主键
         return connection.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
       } else {
+    	  // 返回数据库生成的主键填充至keyColumnNames中指定的列
         return connection.prepareStatement(sql, keyColumnNames);
       }
     } else if (mappedStatement.getResultSetType() == ResultSetType.DEFAULT) {
+	    // 创建普通的prepareStatement对象
       return connection.prepareStatement(sql);
     } else {
+	    // 设置结果集是否可以滚动以及其游标是否可以上下移动，设置结果集是否可更新
       return connection.prepareStatement(sql, mappedStatement.getResultSetType().getValue(), ResultSet.CONCUR_READ_ONLY);
     }
   }
 
+  /**
+   * PreparedStatementHandler中 parameterize方法最终通过 ParameterHandler接口经过多级中转后调用了 java.sql.PreparedStatement类中的参数赋值方法。
+   * @param statement
+   * @throws SQLException
+   */
   @Override
   public void parameterize(Statement statement) throws SQLException {
+    // 使用parameterHandler对sql语句的占位符进行处理
     parameterHandler.setParameters((PreparedStatement) statement);
   }
 

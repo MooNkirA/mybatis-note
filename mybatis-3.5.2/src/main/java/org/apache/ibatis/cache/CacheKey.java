@@ -45,6 +45,7 @@ public class CacheKey implements Cloneable, Serializable {
   private int count;
   // 更新历史
   // 8/21/2017 - Sonarlint flags this as needing to be marked transient.  While true if content is not serializable, this is not always true and thus should not be marked transient.
+  //该集合中的元素觉得两个CacheKey是否相等
   private List<Object> updateList;
 
   public CacheKey() {
@@ -68,14 +69,15 @@ public class CacheKey implements Cloneable, Serializable {
    * @param object 此次更新的参数
    */
   public void update(Object object) {
+	  // 获取object的hash值
     int baseHashCode = object == null ? 1 : ArrayUtil.hashCode(object);
-
+    // 更新count、checksum以及hashcode的值
     count++;
     checksum += baseHashCode;
     baseHashCode *= count;
 
     hashcode = multiplier * hashcode + baseHashCode;
-
+    //将对象添加到updateList中
     updateList.add(object);
   }
 
@@ -95,26 +97,31 @@ public class CacheKey implements Cloneable, Serializable {
    */
   @Override
   public boolean equals(Object object) {
+    // 比较是不是同一个对象
     if (this == object) {
       return true;
     }
+    // 是否类型相同
     if (!(object instanceof CacheKey)) {
       return false;
     }
 
     final CacheKey cacheKey = (CacheKey) object;
 
+    // hashcode是否相同
     if (hashcode != cacheKey.hashcode) {
       return false;
     }
+    // checksum是否相同
     if (checksum != cacheKey.checksum) {
       return false;
     }
+    // count是否相同
     if (count != cacheKey.count) {
       return false;
     }
 
-    // 详细比较变更历史中的每次变更
+    // 详细比较变更历史中的每次变更。以上都不相同，才按顺序比较updateList中元素的hash值是否一致
     for (int i = 0; i < updateList.size(); i++) {
       Object thisObject = updateList.get(i);
       Object thatObject = cacheKey.updateList.get(i);

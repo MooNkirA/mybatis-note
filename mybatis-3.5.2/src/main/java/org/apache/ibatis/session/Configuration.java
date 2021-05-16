@@ -112,28 +112,44 @@ public class Configuration {
   protected Environment environment;
 
   // 以下为<settings>节点中的配置信息
+  /* 是否启用行内嵌套语句 */
   protected boolean safeRowBoundsEnabled;
   protected boolean safeResultHandlerEnabled = true;
+  /* 是否启用数据组A_column自动映射到Java类中的驼峰命名的属性 */
   protected boolean mapUnderscoreToCamelCase;
+  /* 当对象使用延迟加载时 属性的加载取决于能被引用到的那些延迟属性,否则,按需加载(需要的是时候才去加载) */
   protected boolean aggressiveLazyLoading;
+  /* 是否允许单条sql 返回多个数据集 (取决于驱动的兼容性) default:true */
   protected boolean multipleResultSetsEnabled = true;
+  /* 允许JDBC 生成主键。需要驱动器支持。如果设为了true，这个设置将强制使用被生成的主键，有一些驱动器不兼容不过仍然可以执行。 default:false */
   protected boolean useGeneratedKeys;
+  /* 使用列标签代替列名。不同的驱动在这方面会有不同的表现， 具体可参考相关驱动文档或通过测试这两种不同的模式来观察所用驱动的结果。*/
   protected boolean useColumnLabel = true;
+  /* 配置全局性的cache开关，默认为true */
   protected boolean cacheEnabled = true;
   protected boolean callSettersOnNulls;
   protected boolean useActualParamName = true;
   protected boolean returnInstanceForEmptyRow;
 
+  /* 日志打印所有的前缀 */
   protected String logPrefix;
+  /* 指定 MyBatis 所用日志的具体实现，未指定时将自动查找 */
   protected Class<? extends Log> logImpl;
   protected Class<? extends VFS> vfsImpl;
+  /* 设置本地缓存范围，session：就会有数据的共享，statement：语句范围，这样不会有数据的共享 */
   protected LocalCacheScope localCacheScope = LocalCacheScope.SESSION;
+  /* 设置但JDBC类型为空时,某些驱动程序 要指定值 */
   protected JdbcType jdbcTypeForNull = JdbcType.OTHER;
+  /* 设置触发延迟加载的方法 */
   protected Set<String> lazyLoadTriggerMethods = new HashSet<>(Arrays.asList("equals", "clone", "hashCode", "toString"));
+  /* 设置驱动等待数据响应超时数 */
   protected Integer defaultStatementTimeout;
+  /* 设置驱动返回结果数的大小 */
   protected Integer defaultFetchSize;
   protected ResultSetType defaultResultSetType;
+  /* 执行类型，有simple、resue及batch */
   protected ExecutorType defaultExecutorType = ExecutorType.SIMPLE;
+  /* 指定 MyBatis 应如何自动映射列到字段或属性 */
   protected AutoMappingBehavior autoMappingBehavior = AutoMappingBehavior.PARTIAL;
   protected AutoMappingUnknownColumnBehavior autoMappingUnknownColumnBehavior = AutoMappingUnknownColumnBehavior.NONE;
   // 以上为<settings>节点中的配置信息
@@ -143,13 +159,15 @@ public class Configuration {
   // 反射工厂
   protected ReflectorFactory reflectorFactory = new DefaultReflectorFactory();
   // 对象工厂
+  /* MyBatis每次创建结果对象的新实例时，它都会使用对象工厂（ObjectFactory）去构建POJO */
   protected ObjectFactory objectFactory = new DefaultObjectFactory();
   // 对象包装工厂
   protected ObjectWrapperFactory objectWrapperFactory = new DefaultObjectWrapperFactory();
 
-  // 是否启用懒加载，该配置来自<settings>节点
+  // 是否启用懒加载，延迟加载的全局开关，该配置来自<settings>节点
   protected boolean lazyLoadingEnabled = false;
   // 代理工厂
+  /* 指定 Mybatis 创建具有延迟加载能力的对象所用到的代理工具 */
   protected ProxyFactory proxyFactory = new JavassistProxyFactory(); // #224 Using internal Javassist instead of OGNL
 
   // 数据库编号
@@ -167,29 +185,29 @@ public class Configuration {
   protected final MapperRegistry mapperRegistry = new MapperRegistry(this);
   // 拦截器链（用来支持插件的插入）
   protected final InterceptorChain interceptorChain = new InterceptorChain();
-  // 类型处理器注册表，内置许多，可以通过<typeHandlers>节点补充
+  // TypeHandler类型处理器注册表，内置许多，可以通过<typeHandlers>节点补充
   protected final TypeHandlerRegistry typeHandlerRegistry = new TypeHandlerRegistry();
-  // 类型别名注册表，内置许多，可以通过<typeAliases>节点补充
+  // TypeAlias类型别名注册表，内置许多，可以通过<typeAliases>节点补充
   protected final TypeAliasRegistry typeAliasRegistry = new TypeAliasRegistry();
   // 语言驱动注册表
   protected final LanguageDriverRegistry languageRegistry = new LanguageDriverRegistry();
 
-  // 映射的数据库操作语句
+  // mapper文件中增删改查操作的注册中心（映射的数据库操作语句）
   protected final Map<String, MappedStatement> mappedStatements = new StrictMap<MappedStatement>("Mapped Statements collection")
       .conflictMessageProducer((savedValue, targetValue) ->
           ". please check " + savedValue.getResource() + " and " + targetValue.getResource());
-  // 缓存
+  // mapper文件中配置cache节点的 二级缓存
   protected final Map<String, Cache> caches = new StrictMap<>("Caches collection");
-  // 结果映射，即所有的<resultMap>节点
+  // 结果映射，即所有的<resultMap>节点，key为命名空间+ID
   protected final Map<String, ResultMap> resultMaps = new StrictMap<>("Result Maps collection");
   // 参数映射，即所有的<parameterMap>节点
   protected final Map<String, ParameterMap> parameterMaps = new StrictMap<>("Parameter Maps collection");
-  // 主键生成器映射
+  // 主键生成器映射。mapper文件中配置KeyGenerator的insert和update节点，key为命名空间+ID
   protected final Map<String, KeyGenerator> keyGenerators = new StrictMap<>("Key Generators collection");
 
-  // 载入的资源，例如映射文件资源
+  // 载入的资源，例如加载的所有*mapper.xml映射文件资源
   protected final Set<String> loadedResources = new HashSet<>();
-  // SQL语句片段，即所有的<sql>节点
+  // SQL语句片段，即所有的<sql>节点，key为命名空间+ID
   protected final Map<String, XNode> sqlFragments = new StrictMap<>("XML fragments parsed from previous mappers");
 
   // 暂存未处理完成的一些节点
@@ -609,8 +627,6 @@ public class Configuration {
     return MetaObject.forObject(object, objectFactory, objectWrapperFactory, reflectorFactory);
   }
 
-  // MyBatis 中一共只有四个类的对象可以被拦截器替 换，它们分别是ParameterHandler、ResultSetHandler、StatementHan dler 和 Executor。而且替换只能发生在固定的地方，我们称其为拦截点
-
   /**
    * 创建参数处理器
    * @param mappedStatement 数据库操作的信息
@@ -619,9 +635,9 @@ public class Configuration {
    * @return 参数处理器
    */
   public ParameterHandler newParameterHandler(MappedStatement mappedStatement, Object parameterObject, BoundSql boundSql) {
-    // 创建参数处理器
+    // 交由 LanguageDriver 来创建具体的参数处理器，LanguageDriver 默认的实现类是 XMLLanguageDriver，具体实现类是DefaultParameterHandler
     ParameterHandler parameterHandler = mappedStatement.getLang().createParameterHandler(mappedStatement, parameterObject, boundSql);
-    // 将参数处理器交给拦截器链进行替换，一遍拦截链中的烂机器能注入行为
+    // 将参数处理器交给拦截器链进行替换
     parameterHandler = (ParameterHandler) interceptorChain.pluginAll(parameterHandler);
     // 返回最终的参数处理器
     return parameterHandler;
@@ -635,7 +651,9 @@ public class Configuration {
   }
 
   public StatementHandler newStatementHandler(Executor executor, MappedStatement mappedStatement, Object parameterObject, RowBounds rowBounds, ResultHandler resultHandler, BoundSql boundSql) {
+    // 默认创建RoutingStatementHandler实例，在此类的构造函数中，根据MappedStatement对象中的statementType值，来创建具体类型的StatementHandler实现类
     StatementHandler statementHandler = new RoutingStatementHandler(executor, mappedStatement, parameterObject, rowBounds, resultHandler, boundSql);
+    // 加入插件
     statementHandler = (StatementHandler) interceptorChain.pluginAll(statementHandler);
     return statementHandler;
   }
@@ -756,6 +774,7 @@ public class Configuration {
   }
 
   public void addMappedStatement(MappedStatement ms) {
+    // 以ns+id作为key，ms为值注册到mappedStatement
     mappedStatements.put(ms.getId(), ms);
   }
 

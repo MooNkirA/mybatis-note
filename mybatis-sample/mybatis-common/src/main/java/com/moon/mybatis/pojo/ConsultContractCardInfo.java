@@ -4,6 +4,7 @@ import lombok.Data;
 import org.apache.ibatis.type.Alias;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * consult_contract 表映射实体类
@@ -16,6 +17,7 @@ import java.io.Serializable;
 @Alias("consultContractCardInfo") // 设置mybatis的类型别名
 @Data
 public class ConsultContractCardInfo implements Serializable {
+
     private static final long serialVersionUID = 5898926697727427877L;
 
     private Integer contractId;
@@ -24,4 +26,5 @@ public class ConsultContractCardInfo implements Serializable {
     private String activeTime;
     private Integer state;
 
+    private List<ConsultIdCardInfo> infos;
 }

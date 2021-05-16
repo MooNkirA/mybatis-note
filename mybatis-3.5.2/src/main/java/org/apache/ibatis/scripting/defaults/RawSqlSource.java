@@ -57,7 +57,7 @@ public class RawSqlSource implements SqlSource {
 
   @Override
   public BoundSql getBoundSql(Object parameterObject) {
-    // BoundSql对象由sqlSource持有的StaticSqlSource对象返回
+    // BoundSql对象由sqlSource持有的StaticSqlSource对象返回，这里返回的sql已经是将#{}转成占位符?
     return sqlSource.getBoundSql(parameterObject);
   }
 

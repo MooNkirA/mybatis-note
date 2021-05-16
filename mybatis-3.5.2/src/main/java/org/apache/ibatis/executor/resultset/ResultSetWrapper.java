@@ -38,15 +38,29 @@ import org.apache.ibatis.type.UnknownTypeHandler;
 /**
  * @author Iwao AVE!
  */
+
+/**
+ * ResultSetWrapper类是对 java.sql.ResultSet的 进一步封装，这里用到了装饰器模式。
+ * ResultSetWrapper类在 java.sq l.ResultSet接口的基础上扩展出了更多的功能，
+ * 这些功能包括获取所 有列名的列表、获取所有列的类型的列表、获取某列的 JDBC类型、获取某列对应的类型处理器等。
+ */
 public class ResultSetWrapper {
 
+  // 被装饰的resultSet对象
   private final ResultSet resultSet;
+  // 类型处理器注册表
   private final TypeHandlerRegistry typeHandlerRegistry;
+  // resultSet中各个列对应的列名列表
   private final List<String> columnNames = new ArrayList<>();
+  // resultSet中各个列对应的Java类型列表
   private final List<String> classNames = new ArrayList<>();
+  // resultSet中各个列对应的JDBC类型列表
   private final List<JdbcType> jdbcTypes = new ArrayList<>();
+  // 类型与类型处理器的映射表，结构为：Map<列名，Map<Java类型，类型处理器>>
   private final Map<String, Map<Class<?>, TypeHandler<?>>> typeHandlerMap = new HashMap<>();
+  // 记录了所有的有映射关系的列。结构为：Map<resultMap的id，List<对象映射的列表>>
   private final Map<String, List<String>> mappedColumnNamesMap = new HashMap<>();
+  // 记录了所有的无映射关系的列。结构为：Map<resultMap的id，List<对象映射的列表>>
   private final Map<String, List<String>> unMappedColumnNamesMap = new HashMap<>();
 
   public ResultSetWrapper(ResultSet rs, Configuration configuration) throws SQLException {
