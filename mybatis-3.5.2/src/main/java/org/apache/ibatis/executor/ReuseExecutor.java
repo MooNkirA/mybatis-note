@@ -54,9 +54,13 @@ public class ReuseExecutor extends BaseExecutor {
 
   @Override
   public <E> List<E> doQuery(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler, BoundSql boundSql) throws SQLException {
-    Configuration configuration = ms.getConfiguration();
+    // 获取configuration对象
+	  Configuration configuration = ms.getConfiguration();
+    // 创建StatementHandler对象
     StatementHandler handler = configuration.newStatementHandler(wrapper, ms, parameter, rowBounds, resultHandler, boundSql);
+    // StatementHandler对象创建stmt,并使用parameterHandler对占位符进行处理
     Statement stmt = prepareStatement(handler, ms.getStatementLog());
+    // 通过statementHandler对象调用ResultSetHandler将结果集转化为指定对象返回
     return handler.query(stmt, resultHandler);
   }
 
@@ -80,15 +84,22 @@ public class ReuseExecutor extends BaseExecutor {
   private Statement prepareStatement(StatementHandler handler, Log statementLog) throws SQLException {
     Statement stmt;
     BoundSql boundSql = handler.getBoundSql();
+	  // 获取sql语句
     String sql = boundSql.getSql();
+	  // 根据sql语句检查是否缓存了对应的Statement
     if (hasStatementFor(sql)) {
+	    // 获取缓存的Statement
       stmt = getStatement(sql);
+	    // 设置新的超时时间
       applyTransactionTimeout(stmt);
     } else {
+	    // 缓存中没有statment，创建statment过程和SimpleExecutor类似
       Connection connection = getConnection(statementLog);
       stmt = handler.prepare(connection, transaction.getTimeout());
+	    // 放入缓存中
       putStatement(sql, stmt);
     }
+    // 使用parameterHandler处理占位符
     handler.parameterize(stmt);
     return stmt;
   }

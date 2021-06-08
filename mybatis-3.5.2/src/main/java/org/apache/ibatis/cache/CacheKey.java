@@ -77,7 +77,7 @@ public class CacheKey implements Cloneable, Serializable {
     baseHashCode *= count;
 
     hashcode = multiplier * hashcode + baseHashCode;
-    //将对象添加到updateList中
+    // 将对象添加到updateList中
     updateList.add(object);
   }
 
