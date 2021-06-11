@@ -1,7 +1,6 @@
 package com.moon.mybatis.test;
 
-import com.moon.mybatis.dao.CommonMapper;
-import com.moon.mybatis.dao.ConsultConfigAreaMapper;
+import com.moon.mybatis.dao.UserMapper;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -10,7 +9,6 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
 
 /**
  * 测试 Batis 示例使用
@@ -40,7 +38,7 @@ public class MyBatisBasicTest {
 
             // ----------------------------------------- 第三阶段 -----------------------------------------
             // 通过SqlSession调用相应的数据库操作方法
-            System.out.println(sqlSession.selectList("com.moon.mybatis.dao.ConsultConfigAreaMapper.queryAreaByAreaCode", null));
+            System.out.println(sqlSession.selectList("com.moon.mybatis.dao.UserMapper.queryAllUser", null));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -60,11 +58,11 @@ public class MyBatisBasicTest {
             // 通过SqlSessionFactory开启一个SqlSession
             SqlSession sqlSession = sqlSessionFactory.openSession();
             // 通过SqlSession获取指定的mapper映射器（其实是Mapper接口的代理）
-            ConsultConfigAreaMapper mapper = sqlSession.getMapper(ConsultConfigAreaMapper.class);
+            UserMapper mapper = sqlSession.getMapper(UserMapper.class);
 
             // ----------------------------------------- 第三阶段 -----------------------------------------
             // 通过代理实例调用相应Mapper接口中的方法
-            System.out.println(mapper.queryAreaByAreaCode());
+            System.out.println(mapper.queryAllUser());
         } catch (IOException e) {
             e.printStackTrace();
         }

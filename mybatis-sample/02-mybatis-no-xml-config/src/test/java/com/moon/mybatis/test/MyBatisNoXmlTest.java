@@ -1,7 +1,6 @@
 package com.moon.mybatis.test;
 
 import com.moon.mybatis.dao.Anno_CommonMapper;
-import com.moon.mybatis.dao.ConsultConfigAreaMapper;
 import org.apache.ibatis.datasource.pooled.PooledDataSourceFactory;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.mapping.Environment;
@@ -15,7 +14,6 @@ import org.junit.Test;
 
 import javax.sql.DataSource;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Properties;
 
 /**
@@ -51,8 +49,8 @@ public class MyBatisNoXmlTest {
         // 开启连接
         SqlSession sqlSession = sqlSessionFactory.openSession();
         // 获取需要调用的mapper接口
-        ConsultConfigAreaMapper mapper = sqlSession.getMapper(ConsultConfigAreaMapper.class);
-        System.out.println(mapper.queryAreaByAreaCode());
+        // ConsultConfigAreaMapper mapper = sqlSession.getMapper(ConsultConfigAreaMapper.class);
+        // System.out.println(mapper.queryAreaByAreaCode());
     }
 
 }

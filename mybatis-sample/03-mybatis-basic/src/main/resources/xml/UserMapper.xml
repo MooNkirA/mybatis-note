@@ -16,9 +16,10 @@
 
     <select id="selectByUserName" resultMap="BaseResultMap">
         select
-        <include refid="Base_Column_List" />
-        from user
-        where username = ${username}
+            <include refid="Base_Column_List" />
+        from
+             user
+        where
     </select>
 
 </mapper>
