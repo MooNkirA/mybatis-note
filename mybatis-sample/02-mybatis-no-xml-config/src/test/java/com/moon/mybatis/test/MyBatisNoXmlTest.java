@@ -18,7 +18,6 @@ import java.util.Properties;
 
 /**
  * 直接基于 Java 代码而不是 XML 文件中创建配置，或者想要创建你自己的配置建造器的测试
- * TODO: 待完善
  *
  * @author MooNkirA
  * @version 1.0
@@ -49,8 +48,8 @@ public class MyBatisNoXmlTest {
         // 开启连接
         SqlSession sqlSession = sqlSessionFactory.openSession();
         // 获取需要调用的mapper接口
-        // ConsultConfigAreaMapper mapper = sqlSession.getMapper(ConsultConfigAreaMapper.class);
-        // System.out.println(mapper.queryAreaByAreaCode());
+        Anno_CommonMapper mapper = sqlSession.getMapper(Anno_CommonMapper.class);
+        System.out.println(mapper.queryAllUser());
     }
 
 }

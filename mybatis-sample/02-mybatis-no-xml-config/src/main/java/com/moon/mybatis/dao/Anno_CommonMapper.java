@@ -1,10 +1,11 @@
 package com.moon.mybatis.dao;
 
-import com.moon.mybatis.pojo.ConsultConfigArea;
+import com.moon.mybatis.pojo.User;
+import org.apache.ibatis.annotations.Result;
+import org.apache.ibatis.annotations.Results;
 import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * 使用注解映射sql，不依赖xml
@@ -16,7 +17,14 @@ import java.util.Map;
  */
 public interface Anno_CommonMapper {
 
-    @Select("select `areaCode`,`areaName`,`state` from consult_configarea")
-    List<ConsultConfigArea> queryAreaByAreaCode(Map param);
+    @Results(id = "BaseResultMap", value = {
+            @Result(property = "id", column = "id", id = true),
+            @Result(property = "username", column = "username"),
+            @Result(property = "birthday", column = "birthday"),
+            @Result(property = "sex", column = "sex"),
+            @Result(property = "address", column = "address")
+    })
+    @Select("select `id`, `username`, `birthday`, `sex`, `address` from `user`")
+    List<User> queryAllUser();
 
 }

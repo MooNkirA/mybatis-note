@@ -9,10 +9,10 @@
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>04-mybatis-spring</artifactId>
+    <artifactId>05-mybatis-spring-annotation</artifactId>
     <packaging>jar</packaging>
     <name>${project.artifactId}</name>
-    <description>MyBatis 与 Spring 整合基于xml配置方式</description>
+    <description>MyBatis 与 Spring 整合基于纯注解配置方式</description>
 
     <dependencies>
         <dependency>
