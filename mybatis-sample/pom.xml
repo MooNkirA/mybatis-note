@@ -2,8 +2,8 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
 
+    <modelVersion>4.0.0</modelVersion>
     <groupId>com.moon</groupId>
     <artifactId>mybatis-sample</artifactId>
     <version>1.0-SNAPSHOT</version>
@@ -20,6 +20,9 @@
         <module>02-mybatis-no-xml-config</module>
         <module>03-mybatis-basic</module>
         <module>mybatis-generator</module>
+        <module>04-mybatis-spring</module>
+        <module>05-mybatis-spring-annotation</module>
+        <module>06-mybatis-interceptor</module>
     </modules>
 
     <!-- 版本号管理 -->
@@ -29,8 +32,13 @@
         <mybatis.version>3.5.2-study</mybatis.version>
         <mybatis.generator.version>1.4.0</mybatis.generator.version>
         <mysql-connector-java.version>5.1.45</mysql-connector-java.version>
+        <mybatis-spring.version>2.0.2-study</mybatis-spring.version>
+        <spring.version>5.2.8.RELEASE</spring.version>
+        <spring-batch.version>4.2.1.RELEASE</spring-batch.version>
         <!-- 日志包版本 -->
         <log4j.version>1.2.17</log4j.version>
+        <!-- druid数据源 -->
+        <druid.version>1.2.4</druid.version>
 
         <!-- 本项目版本号 -->
         <module.version>1.0-SNAPSHOT</module.version>
@@ -68,6 +76,35 @@
                 <groupId>org.mybatis.generator</groupId>
                 <artifactId>mybatis-generator-core</artifactId>
                 <version>${mybatis.generator.version}</version>
+            </dependency>
+
+            <!-- druid 数据源 -->
+            <dependency>
+                <groupId>com.alibaba</groupId>
+                <artifactId>druid</artifactId>
+                <version>${druid.version}</version>
+            </dependency>
+            <!-- MyBatis 与 Spring 整合的核心包 -->
+            <dependency>
+                <groupId>org.mybatis</groupId>
+                <artifactId>mybatis-spring</artifactId>
+                <version>${mybatis-spring.version}</version>
+            </dependency>
+            <!-- spring 核心依赖 -->
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-context</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-jdbc</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.batch</groupId>
+                <artifactId>spring-batch-core</artifactId>
+                <version>${spring-batch.version}</version>
             </dependency>
 
             <!-- 日志框架 -->
@@ -158,6 +195,5 @@
             </resource>
         </resources>
     </build>
-
 
 </project>

@@ -256,10 +256,10 @@ public abstract class BaseExecutor implements Executor {
     }
     // 创建CacheKey，并将所有查询参数依次更新写入
     CacheKey cacheKey = new CacheKey();
-    cacheKey.update(ms.getId());
-    cacheKey.update(rowBounds.getOffset());
+    cacheKey.update(ms.getId()); // mappedStatment 的 id
+    cacheKey.update(rowBounds.getOffset()); // 指定查询结果集的范围（分页信息）
     cacheKey.update(rowBounds.getLimit());
-    cacheKey.update(boundSql.getSql());
+    cacheKey.update(boundSql.getSql()); // 查询所使用的 SQL 语句
     List<ParameterMapping> parameterMappings = boundSql.getParameterMappings();
     TypeHandlerRegistry typeHandlerRegistry = ms.getConfiguration().getTypeHandlerRegistry();
     // mimic DefaultParameterHandler logic
@@ -277,6 +277,7 @@ public abstract class BaseExecutor implements Executor {
           MetaObject metaObject = configuration.newMetaObject(parameterObject);
           value = metaObject.getValue(propertyName);
         }
+        // 更新 SQL 中占位符的属性值
         cacheKey.update(value);
       }
     }

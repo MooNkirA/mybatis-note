@@ -15,6 +15,9 @@ import java.util.List;
  */
 public interface UserMapper {
 
+    /* 基础查询 */
+    List<User> queryAllUser();
+
     /* 模拟在使用${}注入参数时sql注入 */
     List<User> selectByUserName(@Param("username") String username);
 

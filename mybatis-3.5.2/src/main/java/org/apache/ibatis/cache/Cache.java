@@ -36,25 +36,29 @@ import java.util.concurrent.locks.ReadWriteLock;
  * }
  * </pre>
  *
+ * Cache接口的源码如代码所示，在接口中定义了实现类和装饰器类中必须实现的方法
+ *
  * @author Clinton Begin
  */
-
 public interface Cache {
 
   /**
-   * @return The identifier of this cache
+   * 获取缓存现类的id
+   * @return The identifier of this cache 缓存id
    */
   String getId();
 
   /**
-   * @param key Can be any object but usually it is a {@link CacheKey}
-   * @param value The result of a select.
+   * 向缓存写入一条数据，key一般是CacheKey对象
+   * @param key Can be any object but usually it is a {@link CacheKey} 数据的键
+   * @param value The result of a select. 数据的值
    */
   void putObject(Object key, Object value);
 
   /**
-   * @param key The key
-   * @return The object stored in the cache.
+   * 根据指定的key从缓存中读取一条数据
+   * @param key The key 数据的键
+   * @return The object stored in the cache. 原来的数据值
    */
   Object getObject(Object key);
 
@@ -68,21 +72,24 @@ public interface Cache {
    * This way other threads will wait for the value to be
    * available instead of hitting the database.
    *
+   * 根据指定的key从缓存中删除一条数据
    *
-   * @param key The key
-   * @return Not used
+   * @param key The key 数据的键
+   * @return Not used 原来的数据值
    */
   Object removeObject(Object key);
 
   /**
    * Clears this cache instance.
+   * 清空缓存
    */
   void clear();
 
   /**
    * Optional. This method is not called by the core.
+   * 读取缓存中数据数目
    *
-   * @return The number of elements stored in the cache (not its capacity).
+   * @return The number of elements stored in the cache (not its capacity). 数据的数目
    */
   int getSize();
 
@@ -91,7 +98,9 @@ public interface Cache {
    * <p>
    * Any locking needed by the cache must be provided internally by the cache provider.
    *
-   * @return A ReadWriteLock
+   * 获取读写锁，该方法已废弃
+   *
+   * @return A ReadWriteLock 读写锁
    */
   default ReadWriteLock getReadWriteLock() {
     return null;

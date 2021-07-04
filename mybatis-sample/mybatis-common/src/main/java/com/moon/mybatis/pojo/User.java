@@ -17,10 +17,10 @@ import java.util.Date;
 public class User implements Serializable {
     private static final long serialVersionUID = -6588958936403857195L;
 
-    private Integer id; //int(11) NOT NULL AUTO_INCREMENT
-    private String username; //varchar(32) NOT NULL COMMENT '用户名称'
-    private Date birthday; //date DEFAULT NULL COMMENT '生日'
-    private String sex; //char(1) DEFAULT NULL COMMENT '性别'
-    private String address; //varchar(256) DEFAULT NULL COMMENT '地址'
+    private Integer id; // int(11) NOT NULL AUTO_INCREMENT
+    private String username; // varchar(32) NOT NULL COMMENT '用户名称'
+    private Date birthday; // date DEFAULT NULL COMMENT '生日'
+    private String sex; // char(1) DEFAULT NULL COMMENT '性别'
+    private String address; // varchar(256) DEFAULT NULL COMMENT '地址'
 
 }

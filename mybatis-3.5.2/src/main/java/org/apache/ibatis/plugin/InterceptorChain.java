@@ -20,6 +20,8 @@ import java.util.Collections;
 import java.util.List;
 
 /**
+ * 拦截器链，属性包含了存储拦截器的集合
+ *
  * @author Clinton Begin
  */
 public class InterceptorChain {
@@ -27,7 +29,7 @@ public class InterceptorChain {
   private final List<Interceptor> interceptors = new ArrayList<>();
 
   /**
-   * MyBatis 中一共只有四个类的对象可以被拦截器替换，它们分别是ParameterHandler、ResultSetHandler、StatementHandler 和 Executor。而且替换只能发生在固定的地方，我们称其为拦截点
+   * MyBatis 中一共只有四个类的对象可以被拦截器替换，它们分别是ParameterHandler、ResultSetHandler、StatementHandler 和 Executor。而且替换只能发生在固定的地方，称其为拦截点
    *
    * 向所有拦截器链提供目标对象，由拦截器链给出替换目标对象的对象
    * @param target 目标对象，是Mybatis中支持拦截的几个类（ParameterHandler、ResultSetHandler、StatementHandler、Executor） 的实例
