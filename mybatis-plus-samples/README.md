@@ -6,9 +6,9 @@
 
 - [x] 01-mybatis-plus-quickstart: 快速开始示例
 - [x] 02-mybatis-plus-crud: 完整 CRUD 示例
+- [x] 03-mybatis-plus-generator: 代码生成器示例
 - [ ] mybatis-plus-quickstart-springmvc: 快速开始示例（Spring MVC版本）
 - [ ] mybatis-plus-reduce-springmvc: 简化掉默认mapper类示例（Spring MVC版本）
-- [ ] mybatis-plus-generator: 代码生成器示例
 - [ ] mybatis-plus-wrapper: 条件构造器示例
 - [ ] mybatis-plus-pagination: 分页功能示例
 - [ ] mybatis-plus-active-record: ActiveRecord示例

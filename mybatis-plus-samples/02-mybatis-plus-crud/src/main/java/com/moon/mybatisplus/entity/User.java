@@ -1,6 +1,8 @@
 package com.moon.mybatisplus.entity;
 
+import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.Data;
 
 /**
@@ -14,11 +16,10 @@ import lombok.Data;
 @Data
 public class User {
 
+    // 配置主键生成策略
+    @TableId(value = "id", type = IdType.AUTO)
     private Long id;
-
-    // 配置 @TableField 注解的 value 属性，解决字段与数据库表不一致
-    @TableField(value = "name")
-    private String username;
+    private String name;
     private Integer age;
     private String email;
 
