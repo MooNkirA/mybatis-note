@@ -44,6 +44,7 @@ public class CrudTest {
         user.setAge(24);
         user.setEmail("aaaa@moon.com");
         user.setAddress("101号");
+        user.setRoleId(1L);
 
         // 返回的result是受影响的行数，并不是自增后的id
         int result = userMapper.insert(user);

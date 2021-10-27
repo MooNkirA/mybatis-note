@@ -22,6 +22,7 @@ public class User {
     private String name;
     private Integer age;
     private String email;
+    private Long roleId;
 
     // 配置 @TableField 注解的 exist 属性为false，代表该字段在数据库表中不存在
     @TableField(exist = false)

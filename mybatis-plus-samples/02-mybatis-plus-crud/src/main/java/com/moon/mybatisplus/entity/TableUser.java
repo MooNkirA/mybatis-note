@@ -27,5 +27,6 @@ public class TableUser {
     // 配置 @TableField 注解的 select 属性控制是否查询该字段，值为 false 则不加入 select 查询范围
     @TableField(select = false)
     private String email;
+    private Long roleId;
 
 }

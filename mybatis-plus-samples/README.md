@@ -7,12 +7,19 @@
 - [x] 01-mybatis-plus-quickstart: 快速开始示例
 - [x] 02-mybatis-plus-crud: 完整 CRUD 示例
 - [x] 03-mybatis-plus-generator: 代码生成器示例
-- [ ] mybatis-plus-quickstart-springmvc: 快速开始示例（Spring MVC版本）
-- [ ] mybatis-plus-reduce-springmvc: 简化掉默认mapper类示例（Spring MVC版本）
-- [ ] mybatis-plus-wrapper: 条件构造器示例
+  - [x] mp-generator-previous：历史版本代码生成器
+  - [x] mp-generator-latest：最新版本代码生成器
+- [x] 04-mybatis-plus-wrapper: 条件构造器示例
 - [ ] mybatis-plus-pagination: 分页功能示例
+- [ ] mybatis-plus-pagehelper: 使用pagehelper进行分页
+- [ ] mybatis-plus-association: 联表查询示例
 - [ ] mybatis-plus-active-record: ActiveRecord示例
 - [ ] mybatis-plus-sequence: Sequence示例
+- [ ] mybatis-plus-id-string: 字符串ID生成示例
+- [ ] mybatis-plus-id-generator: 自定义ID生成示例
+
+- [ ] mybatis-plus-quickstart-springmvc: 快速开始示例（Spring MVC版本）
+- [ ] mybatis-plus-reduce-springmvc: 简化掉默认mapper类示例（Spring MVC版本）
 - [ ] mybatis-plus-execution-analysis: Sql执行分析示例
 - [ ] mybatis-plus-performance-analysis: 性能分析示例
 - [ ] mybatis-plus-optimistic-locker: 乐观锁示例
@@ -27,8 +34,4 @@
 - [ ] mybatis-plus-deluxe: 完整示例（包含 分页、逻辑删除、自定义全局操作 等绝大部分常用功能的使用示例，相当于大整合的完整示例）
 - [ ] mybatis-plus-assembly: 分离打包示例
 - [ ] mybatis-plus-resultmap: 使用 resultMap 示例
-- [ ] mybatis-plus-id-generator: 自定义ID生成示例
-- [ ] mybatis-plus-id-string: 字符串ID生成示例
 - [ ] mybatis-plus-no-spring: 不使用spring下的示例
-- [ ] mybatis-plus-pagehelper: 使用pagehelper进行分页
-- [ ] mybatis-plus-association: 联表查询示例
