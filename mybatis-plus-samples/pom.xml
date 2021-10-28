@@ -26,6 +26,7 @@
         <module>02-mybatis-plus-crud</module>
         <module>03-mybatis-plus-generator</module>
         <module>04-mybatis-plus-wrapper</module>
+        <module>05-mybatis-plus-pagination</module>
     </modules>
 
     <properties>

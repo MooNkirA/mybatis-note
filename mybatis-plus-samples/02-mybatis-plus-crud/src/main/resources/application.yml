@@ -9,4 +9,4 @@ spring:
 # MyBatis-Plus 配置
 logging: # Logger Config
   level:
-    com.moon.mybatisplus.mapper: debug
+    com.moon.mybatisplus.samples.crud.mapper: debug

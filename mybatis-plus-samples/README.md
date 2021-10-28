@@ -10,7 +10,7 @@
   - [x] mp-generator-previous：历史版本代码生成器
   - [x] mp-generator-latest：最新版本代码生成器
 - [x] 04-mybatis-plus-wrapper: 条件构造器示例
-- [ ] mybatis-plus-pagination: 分页功能示例
+- [x] 05-mybatis-plus-pagination: 分页功能示例
 - [ ] mybatis-plus-pagehelper: 使用pagehelper进行分页
 - [ ] mybatis-plus-association: 联表查询示例
 - [ ] mybatis-plus-active-record: ActiveRecord示例
