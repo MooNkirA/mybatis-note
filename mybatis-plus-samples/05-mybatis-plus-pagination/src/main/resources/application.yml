@@ -10,3 +10,6 @@ spring:
 logging: # Logger Config
   level:
     com.moon.mybatisplus.samples.pagination.mapper: debug
+
+mybatis-plus:
+  mapper-locations: classpath:/mapper/*Mapper.xml
