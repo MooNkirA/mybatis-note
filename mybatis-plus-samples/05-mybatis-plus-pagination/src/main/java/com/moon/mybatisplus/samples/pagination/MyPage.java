@@ -5,6 +5,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 /**
+ * 自定义分页类
+ *
  * @author MooNkirA
  * @version 1.0
  * @date 2021-10-28 16:55

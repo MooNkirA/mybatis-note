@@ -9,12 +9,10 @@
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>05-mybatis-plus-pagination</artifactId>
+    <artifactId>06-mybatis-plus-pagehelper</artifactId>
     <packaging>jar</packaging>
     <name>${project.artifactId}</name>
-    <description>
-        MyBatis-Plus 分页插件示例
-    </description>
+    <description>MyBatis-Plus 引用分页助手示例</description>
 
     <dependencies>
         <dependency>
@@ -24,6 +22,18 @@
         <dependency>
             <groupId>com.baomidou</groupId>
             <artifactId>mybatis-plus-boot-starter</artifactId>
+            <!-- pagehelper 包含该依赖存在版本冲突，因此不建议和 mp 一起混用 -->
+            <exclusions>
+                <exclusion>
+                    <groupId>com.github.jsqlparser</groupId>
+                    <artifactId>jsqlparser</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.github.pagehelper</groupId>
+            <artifactId>pagehelper</artifactId>
+            <version>5.1.11</version>
         </dependency>
         <dependency>
             <groupId>mysql</groupId>

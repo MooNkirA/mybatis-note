@@ -27,6 +27,7 @@
         <module>03-mybatis-plus-generator</module>
         <module>04-mybatis-plus-wrapper</module>
         <module>05-mybatis-plus-pagination</module>
+        <module>06-mybatis-plus-pagehelper</module>
     </modules>
 
     <properties>

@@ -9,7 +9,7 @@ spring:
 # MyBatis-Plus 配置
 logging: # Logger Config
   level:
-    com.moon.mybatisplus.samples.pagination.mapper: debug
+    com.moon.mybatisplus.samples: debug
 
 mybatis-plus:
   mapper-locations: classpath:/mapper/*Mapper.xml
