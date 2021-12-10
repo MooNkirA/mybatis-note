@@ -14,7 +14,7 @@
 - [x] 06-mybatis-plus-pagehelper: 使用pagehelper进行分页
 - [x] 07-mybatis-plus-association: 联表查询示例
 - [x] 08-mybatis-plus-active-record: ActiveRecord示例
-- [ ] 09-mybatis-plus-sequence: Sequence示例
+- [x] 09-mybatis-plus-sequence: Sequence示例
 - [ ] mybatis-plus-id-string: 字符串ID生成示例
 - [ ] mybatis-plus-id-generator: 自定义ID生成示例
 

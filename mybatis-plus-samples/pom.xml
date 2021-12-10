@@ -30,6 +30,7 @@
         <module>06-mybatis-plus-pagehelper</module>
         <module>07-mybatis-plus-association</module>
         <module>08-mybatis-plus-active-record</module>
+        <module>09-mybatis-plus-sequence</module>
     </modules>
 
     <properties>

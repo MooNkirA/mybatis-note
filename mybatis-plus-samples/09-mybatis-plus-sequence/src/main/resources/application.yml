@@ -1,0 +1,18 @@
+spring:
+  datasource: # DataSource Config
+    driver-class-name: oracle.jdbc.OracleDriver
+    url: jdbc:oracle:thin:@192.168.96.111:1521:orcl
+    username: root
+    password: 123456
+
+# MyBatis-Plus config
+mybatis-plus:
+  # 配置 id 的生成策略(全局)
+  global-config:
+    db-config:
+      id-type: input
+
+# Logger Config
+logging:
+  level:
+    com.moon.mybatisplus.samples: debug
