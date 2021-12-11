@@ -31,6 +31,10 @@
         <module>07-mybatis-plus-association</module>
         <module>08-mybatis-plus-active-record</module>
         <module>09-mybatis-plus-sequence</module>
+        <module>10-mybatis-plus-execution-analysis</module>
+        <module>11-mybatis-plus-performance-analysis</module>
+        <module>12-mybatis-plus-optimistic-locker</module>
+        <module>13-mybatis-plus-sql-injector</module>
     </modules>
 
     <properties>

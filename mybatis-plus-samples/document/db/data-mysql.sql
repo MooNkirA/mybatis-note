@@ -16,3 +16,11 @@ INSERT INTO role (id, role_name, role_describe)
 VALUES (1, '管理员', 'boos 级别'),
        (2, '用户', '就是个普通人'),
        (3, '程序猿', '偶尔需要用来祭天');
+
+DELETE
+FROM goods;
+
+INSERT INTO goods (id, name)
+VALUES (1, '笔记本电脑'),
+       (2, '手机'),
+       (3, '机械键盘');
