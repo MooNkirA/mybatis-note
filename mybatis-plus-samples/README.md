@@ -20,13 +20,13 @@
 - [x] 12-mybatis-plus-optimistic-locker: 乐观锁示例
 - [x] 13-mybatis-plus-sql-injector: 自定义全局操作示例
 - [x] 14-mybatis-plus-auto-fill-metainfo: 公共字段填充示例
+- [ ] 15-mybatis-plus-logic-delete: 逻辑删除示例
+- [ ] 16-mybatis-plus-enum: 枚举注入示例
 - [ ] mybatis-plus-id-string: 字符串ID生成示例
 - [ ] mybatis-plus-id-generator: 自定义ID生成示例
 - [ ] mybatis-plus-quickstart-springmvc: 快速开始示例（Spring MVC版本）
 - [ ] mybatis-plus-reduce-springmvc: 简化掉默认mapper类示例（Spring MVC版本）
-- [ ] mybatis-plus-logic-delete: 逻辑删除示例
 - [ ] mybatis-plus-multi-datasource: 多数据源示例
-- [ ] mybatis-plus-enum: 枚举注入示例
 - [ ] mybatis-plus-dynamic-tablename: 动态表名示例
 - [ ] mybatis-plus-tenant: 多租户示例
 - [ ] mybatis-plus-typehandler: 类型处理器示例，例如  json 字段对象转换

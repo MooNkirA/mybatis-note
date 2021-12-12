@@ -32,5 +32,6 @@ public class Goods {
      */
     @Version
     private Integer version;
+    private Integer deleted;
 
 }
