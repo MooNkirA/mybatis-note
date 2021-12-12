@@ -1,0 +1,21 @@
+spring:
+  datasource: # DataSource Config
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://127.0.0.1:3306/mybatis_plus_sample_db?useSSL=false&useUnicode=true&characterEncoding=UTF-8
+    username: root
+    password: 123456
+
+# Mybatis Plus config
+mybatis-plus:
+  # 配置扫描通过枚举的包路径。支持统配符 * 或者 ; 分割
+  type-enums-package: com.moon.mybatisplus.samples.enums.enums
+  configuration:
+    # 3.0.8之前版本问题默认将枚举注册为EnumOrdinalTypeHandler,这是错误的方式,默认是 org.apache.ibatis.type.EnumTypeHandler
+    # 如果项目之中实体统一使用IEnum或注解的方式,可配置成 com.baomidou.mybatisplus.extension.handlers.EnumTypeHandler,也可省略上面的type-enums-package配置
+    # 配置type-enums-package只对注解方式的枚举处理能提前加载缓存.
+    default-enum-type-handler: org.apache.ibatis.type.EnumOrdinalTypeHandler
+
+# Logger Config
+logging:
+  level:
+    com.moon.mybatisplus.samples: debug

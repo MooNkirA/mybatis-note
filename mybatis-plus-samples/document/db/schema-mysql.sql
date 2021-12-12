@@ -27,7 +27,6 @@ CREATE TABLE role
     PRIMARY KEY (id)
 );
 
-
 DROP TABLE IF EXISTS goods;
 
 CREATE TABLE goods

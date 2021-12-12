@@ -37,6 +37,7 @@
         <module>13-mybatis-plus-sql-injector</module>
         <module>14-mybatis-plus-auto-fill-metainfo</module>
         <module>15-mybatis-plus-logic-delete</module>
+        <module>16-mybatis-plus-enum</module>
     </modules>
 
     <properties>
