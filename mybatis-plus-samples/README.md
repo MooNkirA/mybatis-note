@@ -22,14 +22,14 @@
 - [x] 14-mybatis-plus-auto-fill-metainfo: 公共字段填充示例
 - [x] 15-mybatis-plus-logic-delete: 逻辑删除示例
 - [x] 16-mybatis-plus-enum: 枚举注入示例
-- [ ] 17-mybatis-plus-id-string: 字符串ID生成示例
-- [ ] 18-mybatis-plus-id-generator: 自定义ID生成示例
+- [ ] 17-mybatis-plus-id-string: 字符串ID生成示例（有问题，暂未完成）
+- [x] 18-mybatis-plus-id-generator: 自定义ID生成示例
+- [ ] 19-mybatis-plus-typehandler: 类型处理器示例，例如  json 字段对象转换
 - [ ] mybatis-plus-quickstart-springmvc: 快速开始示例（Spring MVC版本）
 - [ ] mybatis-plus-reduce-springmvc: 简化掉默认mapper类示例（Spring MVC版本）
 - [ ] mybatis-plus-multi-datasource: 多数据源示例
 - [ ] mybatis-plus-dynamic-tablename: 动态表名示例
 - [ ] mybatis-plus-tenant: 多租户示例
-- [ ] mybatis-plus-typehandler: 类型处理器示例，例如  json 字段对象转换
 - [ ] mybatis-plus-deluxe: 完整示例（包含 分页、逻辑删除、自定义全局操作 等绝大部分常用功能的使用示例，相当于大整合的完整示例）
 - [ ] mybatis-plus-assembly: 分离打包示例
 - [ ] mybatis-plus-resultmap: 使用 resultMap 示例
