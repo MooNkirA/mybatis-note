@@ -1,0 +1,8 @@
+DROP TABLE IF EXISTS `order`;
+
+CREATE TABLE `order`
+(
+    id  VARCHAR(30) AUTO_INCREMENT COMMENT '主键ID',
+    amt INT(11) NULL DEFAULT 0 COMMENT '订单总金额',
+    PRIMARY KEY (id)
+);

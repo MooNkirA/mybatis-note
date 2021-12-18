@@ -1,0 +1,18 @@
+spring:
+  datasource: # DataSource Config
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://127.0.0.1:3306/mybatis_plus_sample_db?useSSL=false&useUnicode=true&characterEncoding=UTF-8
+    username: root
+    password: 123456
+
+# MyBatis-Plus 配置
+mybatis-plus:
+  # Maven 多模块项目的扫描路径需以 classpath*: 开头 （即加载多个 jar 包下的 XML 文件）
+  mapper-locations: classpath*:/mapper/**/*.xml
+  global-config:
+    db-config:
+      property-format: "\"%s\""
+# Logger Config
+logging:
+  level:
+    com.moon.mybatisplus.samples: debug
