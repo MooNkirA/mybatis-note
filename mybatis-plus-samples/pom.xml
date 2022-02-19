@@ -40,6 +40,8 @@
         <module>16-mybatis-plus-enum</module>
         <module>17-mybatis-plus-id-string</module>
         <module>18-mybatis-plus-id-generator</module>
+        <module>19-mybatis-plus-typehandler</module>
+        <module>20-mybatis-plus-service</module>
     </modules>
 
     <properties>

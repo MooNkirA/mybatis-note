@@ -24,7 +24,8 @@
 - [x] 16-mybatis-plus-enum: 枚举注入示例
 - [ ] 17-mybatis-plus-id-string: 字符串ID生成示例（有问题，暂未完成）
 - [x] 18-mybatis-plus-id-generator: 自定义ID生成示例
-- [ ] 19-mybatis-plus-typehandler: 类型处理器示例，例如  json 字段对象转换
+- [ ] 19-mybatis-plus-typehandler: 类型处理器示例，例如：json 字段对象转换
+- [ ] 20-mybatis-plus-service: 通用 Service CRUD 封装 `IService` 接口
 - [ ] mybatis-plus-quickstart-springmvc: 快速开始示例（Spring MVC版本）
 - [ ] mybatis-plus-reduce-springmvc: 简化掉默认mapper类示例（Spring MVC版本）
 - [ ] mybatis-plus-multi-datasource: 多数据源示例
